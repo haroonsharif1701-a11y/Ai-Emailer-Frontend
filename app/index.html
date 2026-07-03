@@ -3,11 +3,24 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AI Emailer | Enterprise Dashboard</title>
+<title>AI Emailer | Blackcaps Dashboard</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <link rel="stylesheet" href="css/style.css">
+<link rel="icon" type="image/svg+xml" href="icon/favicon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="icon/favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="icon/favicon-16.png">
+<link rel="shortcut icon" href="icon/favicon.ico">
+<link rel="apple-touch-icon" sizes="180x180" href="icon/apple-touch-icon.png">
+<script>
+  /* Apply saved theme before first paint to avoid a light/dark flash */
+  (function () {
+    var saved = localStorage.getItem("ai-emailer-theme");
+    var theme = saved || (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    document.documentElement.setAttribute("data-theme", theme);
+  })();
+</script>
 </head>
 <body>
 
@@ -52,11 +65,12 @@
         <input type="text" placeholder="Search emails, senders, attachments...">
       </div>
       <div class="topbar-right">
+        <button class="icon-btn" id="themeToggle" title="Toggle theme"><i class="fa-solid fa-moon"></i></button>
         <button class="icon-btn"><i class="fa-regular fa-bell"></i><span class="dot"></span></button>
         <button class="icon-btn"><i class="fa-regular fa-envelope"></i></button>
         <div class="divider-v"></div>
         <div class="user-chip">
-          <div class="avatar">Blackcap</div>
+          <div class="avatar">HS</div>
           <div class="user-meta">
             <span class="user-name">Blackcap</span>
             <span class="user-role">Administrator</span>
@@ -72,7 +86,7 @@
       <section class="page active" id="page-dashboard">
         <div class="page-head">
           <div>
-            <h1>Welcome back, Aditi 👋</h1>
+            <h1>Welcome back, Blackcap 👋</h1>
             <p>Here's what's happening with your inbox today.</p>
           </div>
           <button class="btn btn-primary"><i class="fa-solid fa-plus"></i> Connect Mailbox</button>
@@ -404,6 +418,7 @@
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 <script src="js/data.js"></script>
+<script src="js/theme.js"></script>
 <script src="js/script.js"></script>
 </body>
 </html>
