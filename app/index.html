@@ -1,701 +1,409 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ai Emailer Dashboard</title>
-      <link rel="icon" type="image/png" href="/icon/favicon.png">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-
-    <link rel="stylesheet"
-    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
-
-    <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Emailer | Enterprise Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="stylesheet" href="css/style.css">
 </head>
-
 <body>
 
-<div class="container">
-
-    <!-- ================= SIDEBAR ================= -->
-
-    <aside class="sidebar">
-
-        <div class="logo">
-
-            <div class="logo-icon">
-                <i class="fa-solid fa-envelope-open-text"></i>
-            </div>
-
-            <div>
-                <h2>Ai Emailer</h2>
-                <span>AI Email Intelligence</span>
-            </div>
-
-        </div>
-
-        <ul class="menu">
-
-            <li class="active">
-                <a href="#">
-                    <i class="fa-solid fa-house"></i>
-                    Dashboard
-                </a>
-            </li>
-
-            <li>
-                <a href="#">
-                    <i class="fa-regular fa-envelope"></i>
-                    Inbox
-                    <span class="badge">128</span>
-                </a>
-            </li>
-
-            <li>
-                <a href="ai-summary.html">
-                    <i class="fa-solid fa-file-lines"></i>
-                    AI Summary
-                </a>
-            </li>
-
-            <li>
-                <a href="#">
-                    <i class="fa-solid fa-shield-halved"></i>
-                    Threat Detection
-                </a>
-            </li>
-
-            <li>
-                <a href="#">
-                    <i class="fa-solid fa-layer-group"></i>
-                    Classification
-                </a>
-            </li>
-
-            <li>
-                <a href="#">
-                    <i class="fa-solid fa-magnifying-glass"></i>
-                    Smart Search
-                </a>
-            </li>
-
-            <li>
-                <a href="#">
-                    <i class="fa-regular fa-paper-plane"></i>
-                    Reply Assistant
-                </a>
-            </li>
-
-            <li>
-                <a href="#">
-                    <i class="fa-solid fa-paperclip"></i>
-                    Attachments
-                </a>
-            </li>
-
-            <li>
-                <a href="#">
-                    <i class="fa-regular fa-calendar"></i>
-                    Calendar Extractor
-                </a>
-            </li>
-
-            <li>
-                <a href="#">
-                    <i class="fa-solid fa-chart-line"></i>
-                    Analytics
-                </a>
-            </li>
-
-            <li>
-                <a href="#">
-                    <i class="fa-solid fa-gear"></i>
-                    Settings
-                </a>
-            </li>
-
-            <li>
-                <a href="#">
-                    <i class="fa-solid fa-users"></i>
-                    Users & Roles
-                </a>
-            </li>
-
-            <li>
-                <a href="#">
-                    <i class="fa-solid fa-id-card"></i>
-                    License Management
-                </a>
-            </li>
-
-            <li>
-                <a href="#">
-                    <i class="fa-solid fa-clipboard-list"></i>
-                    Audit Logs
-                </a>
-            </li>
-
-        </ul>
-
-        <div class="usage-card">
-
-            <h4>AI Usage this month</h4>
-
-            <div class="progress">
-                <div class="fill"></div>
-            </div>
-
-            <p>7,800 / 10,000 Credits Used</p>
-
-            <button>
-                Upgrade Plan
-            </button>
-
-        </div>
-
-    </aside>
-
-    <!-- ================= MAIN ================= -->
-
-    <main class="main">
-
-        <!-- NAVBAR -->
-
-        <header class="topbar">
-
-            <div class="search-box">
-
-                <i class="fa-solid fa-magnifying-glass"></i>
-
-                <input
-                type="text"
-                placeholder="Search emails, contacts, invoices...">
-
-            </div>
-
-            <div class="top-actions">
-
-                <button class="icon-btn">
-                    <i class="fa-regular fa-moon"></i>
-                </button>
-
-                <button class="icon-btn notify">
-
-                    <i class="fa-regular fa-bell"></i>
-
-                    <span>12</span>
-
-                </button>
-
-                <div class="profile">
-
-                    <img src="/icon/avatar_icon.png" alt="">
-
-                    <div>
-
-                        <h4>Blackcap</h4>
-
-                        <small>Admin</small>
-
-                    </div>
-
-                    <i class="fa-solid fa-chevron-down"></i>
-
-                </div>
-
-            </div>
-
-        </header>
-
-        <!-- PAGE HEADER -->
-
-        <section class="page-title">
-
-            <div>
-
-                <h1>Dashboard 👋</h1>
-
-                <p>
-                    Here's what's happening with your emails today.
-                </p>
-
-            </div>
-
-            <div class="actions">
-
-                <button class="date-btn">
-
-                    <i class="fa-regular fa-calendar"></i>
-
-                    July 01 - July 02
-
-                </button>
-
-                <button class="connect">
-
-                    <i class="fa-solid fa-plus"></i>
-
-                    Connect Email
-
-                </button>
-
-            </div>
-
-        </section>
-
-        <!-- STATS -->
-
-        <section class="stats">
-
-            <div class="card">
-                <div class="icon blue">
-                    <i class="fa-regular fa-envelope"></i>
-                </div>
-
-                <h5>Total Emails</h5>
-
-                <h2>3,540</h2>
-
-                <span class="green">+12.5%</span>
-            </div>
-
-            <div class="card">
-
-                <div class="icon red">
-                    <i class="fa-solid fa-shield"></i>
-                </div>
-
-                <h5>Threats Detected</h5>
-
-                <h2>23</h2>
-
-                <span class="red-text">-8.3%</span>
-
-            </div>
-
-            <div class="card">
-
-                <div class="icon purple">
-                    <i class="fa-regular fa-file-lines"></i>
-                </div>
-
-                <h5>AI Summaries</h5>
-
-                <h2>1248</h2>
-
-                <span class="green">18%</span>
-
-            </div>
-
-            <div class="card">
-
-                <div class="icon cyan">
-                    <i class="fa-regular fa-clock"></i>
-                </div>
-
-                <h5>Time Saved</h5>
-
-                <h2>16.5 hrs</h2>
-
-                <span class="green">20%</span>
-
-            </div>
-
-            <div class="card">
-
-                <div class="icon blue">
-                    <i class="fa-solid fa-microchip"></i>
-                </div>
-
-                <h5>AI Usage</h5>
-
-                <h2>78%</h2>
-
-                <span>7800 / 10000</span>
-
-            </div>
-
-        </section>
-
-        <!-- CONTENT GRID -->
-
-       <section class="dashboard-grid">
-
-    <!-- ================= LEFT PANEL ================= -->
-
-    <div class="left-panel">
-
-        <div class="panel-header">
-            <h3>Inbox <span class="unread-count">128 unread</span></h3>
-
-            <div class="header-icons">
-                <i class="fa-solid fa-filter"></i>
-                <i class="fa-solid fa-arrows-rotate"></i>
-                <i class="fa-solid fa-ellipsis-vertical"></i>
-            </div>
-        </div>
-
-        <div class="email-list">
-
-            <div class="email-item active-mail">
-
-                <img src="/app/images/amazon.png" class="avatar">
-
-                <div class="email-info">
-
-                    <div class="email-top">
-                        <h4>Amazon Business</h4>
-                        <span>10:24 AM</span>
-                    </div>
-
-                    <p>Your invoice for order #112-4587</p>
-
-                    <small>
-                        Dear Customer, Thank you for your purchase...
-                    </small>
-
-                </div>
-
-                <span class="tag invoice">Invoice</span>
-
-            </div>
-
-            <div class="email-item">
-
-                <img src="/app/icon/avatar_icon.png" class="avatar">
-
-                <div class="email-info">
-
-                    <div class="email-top">
-                        <h4>Sarah Johnson</h4>
-                        <span>09:15 AM</span>
-                    </div>
-
-                    <p>Q2 Project Update & Next Steps</p>
-
-                    <small>
-                        Hi Team, Please find the latest updates...
-                    </small>
-
-                </div>
-
-                <span class="tag important">Important</span>
-
-            </div>
-
-            <div class="email-item">
-
-                <img src="images/ms365.jpg" class="avatar">
-
-                <div class="email-info">
-
-                    <div class="email-top">
-                        <h4>Microsoft 365</h4>
-                        <span>08:42 AM</span>
-                    </div>
-
-                    <p>Security alert: Unusual sign-in detected</p>
-
-                    <small>
-                        We detected a sign-in to your account...
-                    </small>
-
-                </div>
-
-                <span class="tag security">Security</span>
-
-            </div>
-
-            <div class="email-item">
-
-                <img src="icon/avatar_icon.png" class="avatar">
-
-                <div class="email-info">
-
-                    <div class="email-top">
-                        <h4>HR Team</h4>
-                        <span>Yesterday</span>
-                    </div>
-
-                    <p>Reminder: Policy Update</p>
-
-                    <small>
-                        Please review the updated company policy...
-                    </small>
-
-                </div>
-
-                <span class="tag hr">HR</span>
-
-            </div>
-
-            <div class="email-item">
-
-                <img src="images/linkedin.png" class="avatar">
-
-                <div class="email-info">
-
-                    <div class="email-top">
-                        <h4>LinkedIn</h4>
-                        <span>Yesterday</span>
-                    </div>
-
-                    <p>You have 5 new messages</p>
-
-                    <small>
-                        See what's new with your connections...
-                    </small>
-
-                </div>
-
-                <span class="tag social">Social</span>
-
-            </div>
-
-        </div>
-
-        <div class="load-more">
-            Load more emails
-        </div>
-
+<div class="app">
+
+  <!-- ===================== SIDEBAR ===================== -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-icon"><i class="fa-solid fa-envelope-open-text"></i></div>
+      <div class="brand-text">
+        <span class="brand-name">AI Emailer</span>
+        <span class="brand-tag">Enterprise</span>
+      </div>
     </div>
 
+    <nav class="nav">
+      <a href="#" class="nav-item active" data-page="dashboard"><i class="fa-solid fa-chart-pie"></i><span>Dashboard</span></a>
+      <a href="#" class="nav-item" data-page="inbox"><i class="fa-solid fa-inbox"></i><span>Inbox</span></a>
+      <a href="#" class="nav-item" data-page="threat"><i class="fa-solid fa-shield-halved"></i><span>Threat Detection</span></a>
+      <a href="#" class="nav-item" data-page="classification"><i class="fa-solid fa-tags"></i><span>Classification</span></a>
+      <a href="#" class="nav-item" data-page="sentiment"><i class="fa-solid fa-face-smile"></i><span>Sentiment Analysis</span></a>
+      <a href="#" class="nav-item" data-page="reply"><i class="fa-solid fa-reply-all"></i><span>AI Reply Generator</span></a>
+      <a href="#" class="nav-item" data-page="attachments"><i class="fa-solid fa-paperclip"></i><span>Attachment Analyzer</span></a>
+      <a href="#" class="nav-item" data-page="search"><i class="fa-solid fa-magnifying-glass"></i><span>Smart Search</span></a>
+      <a href="#" class="nav-item" data-page="organization"><i class="fa-solid fa-building"></i><span>Organization</span></a>
+      <a href="#" class="nav-item" data-page="license"><i class="fa-solid fa-key"></i><span>License</span></a>
+      <a href="#" class="nav-item" data-page="settings"><i class="fa-solid fa-gear"></i><span>Settings</span></a>
+    </nav>
 
-
-    <!-- ================= CENTER PANEL ================= -->
-
-    <div class="center-panel">
-
-        <div class="mail-header">
-
-            <h2>Your invoice for order #112-4587</h2>
-
-            <i class="fa-solid fa-up-right-from-square"></i>
-
-        </div>
-
-        <div class="sender-info">
-
-            <div class="sender-left">
-
-                <img src="images/amazon.png" class="avatar">
-
-                <div>
-
-                    <strong>Amazon Business</strong>
-
-                    <small>&lt;no-reply@amazon.com&gt;</small>
-
-                    <p>To : john.doe@company.com</p>
-
-                </div>
-
-            </div>
-
-            <span>10:24 AM</span>
-
-        </div>
-
-        <!-- <div class="action-tabs">
-
-            <button class="active">AI Summary</button>
-
-            <button>Threat Check</button>
-
-            <button>Classification</button>
-
-            <button>Reply Assistant</button>
-
-        </div> -->
-
-        <div class="summary-card">
-
-            <div class="summary-title">
-                AI Summary
-                <span>Generated 2 minutes ago</span>
-            </div>
-
-            <p>
-                This email contains an invoice for order #112-4587
-                placed on May 12, 2025.
-                The total amount is $1,249.99 for 3 items.
-                Payment is due within 30 days.
-            </p>
-
-            <h4>Key Details</h4>
-
-            <div class="detail-grid">
-
-                <div>📦 Order ID : #112-4587</div>
-
-                <div>💲 Total : $1,249.99</div>
-
-                <div>📅 Order Date : May 12, 2025</div>
-
-                <div>📅 Due Date : June 11, 2025</div>
-
-                <div>📦 Items : 3</div>
-
-                <div>💳 Terms : Net 30 Days</div>
-
-            </div>
-
-            <h4>Action Items</h4>
-
-            <ul>
-
-                <li>Review and approve the invoice</li>
-
-                <li>Process payment before June 11, 2025</li>
-
-                <li>Contact vendor if any discrepancies</li>
-
-            </ul>
-
-        </div>
-
-        <div class="attachments">
-
-            <h4>Attachments (2)</h4>
-
-            <div class="attachment">
-
-                📄 Invoice_112-4587.pdf
-
-                <span>245 KB</span>
-
-            </div>
-
-            <div class="attachment">
-
-                📊 Order_Summary.xlsx
-
-                <span>128 KB</span>
-
-            </div>
-
-        </div>
-
-        <button class="view-btn">
-            View Full Email
-        </button>
-
+    <div class="sidebar-footer">
+      <a href="#" class="nav-item logout"><i class="fa-solid fa-arrow-right-from-bracket"></i><span>Logout</span></a>
     </div>
+  </aside>
 
+  <!-- ===================== MAIN ===================== -->
+  <div class="main">
 
+    <!-- ===================== TOPBAR ===================== -->
+    <header class="topbar">
+      <div class="search-box">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="text" placeholder="Search emails, senders, attachments...">
+      </div>
+      <div class="topbar-right">
+        <button class="icon-btn"><i class="fa-regular fa-bell"></i><span class="dot"></span></button>
+        <button class="icon-btn"><i class="fa-regular fa-envelope"></i></button>
+        <div class="divider-v"></div>
+        <div class="user-chip">
+          <div class="avatar">Blackcap</div>
+          <div class="user-meta">
+            <span class="user-name">Blackcap</span>
+            <span class="user-role">Administrator</span>
+          </div>
+          <i class="fa-solid fa-chevron-down"></i>
+        </div>
+      </div>
+    </header>
 
-    <!-- ================= RIGHT PANEL ================= -->
+    <main class="content" id="content">
 
-    <div class="right-panel">
-
-        <div class="analysis-card">
-
-            <h3>Threat Analysis</h3>
-
-            <div class="risk low">
-
-                ✔ Low Risk
-
-            </div>
-
-            <small>This email is safe</small>
-
-            <ul>
-
-                <li>Sender is verified</li>
-
-                <li>SPF / DKIM / DMARC Passed</li>
-
-                <li>No suspicious links found</li>
-
-                <li>No malware detected</li>
-
-            </ul>
-
-            <button class="report-btn">
-
-                View Full Report
-
-            </button>
-
+      <!-- ================= DASHBOARD ================= -->
+      <section class="page active" id="page-dashboard">
+        <div class="page-head">
+          <div>
+            <h1>Welcome back, Aditi 👋</h1>
+            <p>Here's what's happening with your inbox today.</p>
+          </div>
+          <button class="btn btn-primary"><i class="fa-solid fa-plus"></i> Connect Mailbox</button>
         </div>
 
-        <div class="analysis-card">
-
-            <h3>Classification</h3>
-
-            <p>Primary Category</p>
-
-            <span class="tag invoice">
-                Invoice
-            </span>
-
-            <p>Sub Category</p>
-
-            <span class="tag billing">
-                Billing
-            </span>
-
-            <div class="confidence">
-
-                <span>Confidence</span>
-
-                <strong>98%</strong>
-
+        <div class="stat-grid">
+          <div class="stat-card">
+            <div class="stat-icon blue"><i class="fa-solid fa-envelope"></i></div>
+            <div class="stat-info">
+              <span class="stat-label">Total Emails</span>
+              <span class="stat-value">12,847</span>
+              <span class="stat-trend up"><i class="fa-solid fa-arrow-up"></i> 12.5% this week</span>
             </div>
-
-            <div class="progress">
-
-                <div class="fill" style="width:98%"></div>
-
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon red"><i class="fa-solid fa-triangle-exclamation"></i></div>
+            <div class="stat-info">
+              <span class="stat-label">Threats Detected</span>
+              <span class="stat-value">234</span>
+              <span class="stat-trend down"><i class="fa-solid fa-arrow-down"></i> 3.2% this week</span>
             </div>
-
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon purple"><i class="fa-solid fa-microchip"></i></div>
+            <div class="stat-info">
+              <span class="stat-label">AI Usage</span>
+              <span class="stat-value">8,542</span>
+              <span class="stat-trend up"><i class="fa-solid fa-arrow-up"></i> 8.1% this week</span>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon green"><i class="fa-solid fa-clock"></i></div>
+            <div class="stat-info">
+              <span class="stat-label">Hours Saved</span>
+              <span class="stat-value">318 hrs</span>
+              <span class="stat-trend up"><i class="fa-solid fa-arrow-up"></i> 5.4% this week</span>
+            </div>
+          </div>
         </div>
 
-        <div class="analysis-card">
-
-            <h3>Sentiment Analysis</h3>
-
-            <div class="sentiment">
-
-                😊 <strong>Neutral</strong>
-
+        <div class="chart-grid">
+          <div class="card chart-card">
+            <div class="card-head">
+              <h3>Email Activity</h3>
+              <select class="mini-select"><option>Last 7 days</option><option>Last 30 days</option></select>
             </div>
-
-            <small>Email tone is neutral and professional</small>
-
-            <div class="bars">
-
-                <div>
-                    Positive
-                    <div class="bar"><span style="width:60%"></span></div>
-                </div>
-
-                <div>
-                    Neutral
-                    <div class="bar"><span style="width:30%"></span></div>
-                </div>
-
-                <div>
-                    Negative
-                    <div class="bar"><span style="width:10%"></span></div>
-                </div>
-
-            </div>
-
+            <canvas id="activityChart" height="260"></canvas>
+          </div>
+          <div class="card chart-card">
+            <div class="card-head"><h3>Email Categories</h3></div>
+            <canvas id="categoryChart" height="220"></canvas>
+            <ul class="legend-list" id="categoryLegend"></ul>
+          </div>
         </div>
 
-    </div>
+        <div class="card table-card">
+          <div class="card-head">
+            <h3>Recent Emails</h3>
+            <a href="#" class="link-btn" data-goto="inbox">View All <i class="fa-solid fa-arrow-right"></i></a>
+          </div>
+          <table class="data-table">
+            <thead>
+              <tr><th>Sender</th><th>Subject</th><th>Category</th><th>Status</th><th>Time</th></tr>
+            </thead>
+            <tbody id="recentEmailsBody"></tbody>
+          </table>
+        </div>
+      </section>
 
-</section>
+      <!-- ================= INBOX ================= -->
+      <section class="page" id="page-inbox">
+        <div class="page-head">
+          <div><h1>Inbox</h1><p>All connected mailboxes, unified and AI-summarized.</p></div>
+          <button class="btn btn-primary"><i class="fa-solid fa-rotate"></i> Sync Now</button>
+        </div>
+
+        <div class="inbox-layout">
+          <div class="card inbox-list">
+            <div class="card-head">
+              <div class="tab-group" id="inboxTabs">
+                <button class="tab active" data-filter="all">All</button>
+                <button class="tab" data-filter="unread">Unread</button>
+                <button class="tab" data-filter="flagged">Flagged</button>
+              </div>
+            </div>
+            <div id="inboxItems"></div>
+          </div>
+
+          <div class="card inbox-detail" id="inboxDetail">
+            <p class="empty-hint"><i class="fa-solid fa-hand-pointer"></i> Select an email to view its AI summary</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= THREAT DETECTION ================= -->
+      <section class="page" id="page-threat">
+        <div class="page-head">
+          <div><h1>Threat Detection</h1><p>Phishing &amp; fake email analysis engine.</p></div>
+          <button class="btn btn-outline"><i class="fa-solid fa-file-export"></i> Export Report</button>
+        </div>
+
+        <div class="stat-grid stat-grid-3">
+          <div class="stat-card"><div class="stat-icon green"><i class="fa-solid fa-shield"></i></div>
+            <div class="stat-info"><span class="stat-label">Safe</span><span class="stat-value">11,982</span></div></div>
+          <div class="stat-card"><div class="stat-icon amber"><i class="fa-solid fa-shield-halved"></i></div>
+            <div class="stat-info"><span class="stat-label">Medium Risk</span><span class="stat-value">631</span></div></div>
+          <div class="stat-card"><div class="stat-icon red"><i class="fa-solid fa-skull-crossbones"></i></div>
+            <div class="stat-info"><span class="stat-label">High Risk</span><span class="stat-value">234</span></div></div>
+        </div>
+
+        <div class="card table-card">
+          <div class="card-head"><h3>Scanned Emails</h3></div>
+          <table class="data-table">
+            <thead><tr><th>Sender</th><th>SPF</th><th>DKIM</th><th>DMARC</th><th>Risk</th><th>Confidence</th></tr></thead>
+            <tbody id="threatBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ================= CLASSIFICATION ================= -->
+      <section class="page" id="page-classification">
+        <div class="page-head">
+          <div><h1>Email Classification</h1><p>Automatic categorization across your organization.</p></div>
+        </div>
+        <div class="category-grid" id="categoryGrid"></div>
+        <div class="card table-card">
+          <div class="card-head"><h3>Classified Emails</h3></div>
+          <table class="data-table">
+            <thead><tr><th>Sender</th><th>Subject</th><th>Category</th><th>Confidence</th></tr></thead>
+            <tbody id="classificationBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ================= SENTIMENT ================= -->
+      <section class="page" id="page-sentiment">
+        <div class="page-head">
+          <div><h1>Sentiment Analysis</h1><p>Tone &amp; emotion detection across incoming mail.</p></div>
+        </div>
+        <div class="stat-grid stat-grid-6" id="sentimentStats"></div>
+        <div class="chart-grid">
+          <div class="card chart-card">
+            <div class="card-head"><h3>Sentiment Trend (7 Days)</h3></div>
+            <canvas id="sentimentChart" height="260"></canvas>
+          </div>
+          <div class="card table-card">
+            <div class="card-head"><h3>Recent Flagged Tone</h3></div>
+            <table class="data-table">
+              <thead><tr><th>Sender</th><th>Tone</th></tr></thead>
+              <tbody id="sentimentBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= AI REPLY GENERATOR ================= -->
+      <section class="page" id="page-reply">
+        <div class="page-head">
+          <div><h1>AI Reply Generator</h1><p>Draft context-aware replies in one click.</p></div>
+        </div>
+        <div class="reply-layout">
+          <div class="card">
+            <div class="card-head"><h3>Original Email</h3></div>
+            <div class="reply-original">
+              <p class="ro-subject">Re: Q3 Vendor Contract Renewal</p>
+              <p class="ro-from">From: rahul.mehta@vendorcorp.com</p>
+              <p class="ro-body">Hi team, following up on the contract renewal — could you confirm the updated pricing sheet and share the signed copy by Friday? Let me know if a call would help move things along.</p>
+            </div>
+            <div class="tone-group">
+              <span>Choose tone:</span>
+              <button class="tone-chip active" data-tone="Professional">Professional</button>
+              <button class="tone-chip" data-tone="Friendly">Friendly</button>
+              <button class="tone-chip" data-tone="Formal">Formal</button>
+              <button class="tone-chip" data-tone="Custom">Custom</button>
+            </div>
+            <button class="btn btn-primary full" id="generateReplyBtn"><i class="fa-solid fa-wand-magic-sparkles"></i> Generate Reply</button>
+          </div>
+          <div class="card">
+            <div class="card-head"><h3>AI Draft</h3><span class="badge badge-purple">AI Generated</span></div>
+            <textarea id="replyOutput" class="reply-textarea" rows="12" readonly>Click "Generate Reply" to draft a response...</textarea>
+            <div class="reply-actions">
+              <button class="btn btn-outline" id="copyReplyBtn"><i class="fa-regular fa-copy"></i> Copy</button>
+              <button class="btn btn-primary"><i class="fa-solid fa-paper-plane"></i> Insert &amp; Send</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= ATTACHMENT ANALYZER ================= -->
+      <section class="page" id="page-attachments">
+        <div class="page-head">
+          <div><h1>Attachment Analyzer</h1><p>AI-read summaries of PDFs, DOCX, Excel &amp; scanned images.</p></div>
+        </div>
+        <div class="dropzone">
+          <i class="fa-solid fa-cloud-arrow-up"></i>
+          <p>Drag &amp; drop a file here, or <span>browse</span></p>
+          <span class="dz-sub">Supports PDF, DOCX, XLSX, PNG, JPG</span>
+        </div>
+        <div class="attach-grid" id="attachGrid"></div>
+      </section>
+
+      <!-- ================= SMART SEARCH ================= -->
+      <section class="page" id="page-search">
+        <div class="page-head">
+          <div><h1>Smart Search</h1><p>Ask your inbox anything, in plain English.</p></div>
+        </div>
+        <div class="smart-search-box">
+          <i class="fa-solid fa-sparkles"></i>
+          <input type="text" id="smartSearchInput" placeholder='Try: "Show invoices from Amazon" or "Find all resignation emails"'>
+          <button class="btn btn-primary" id="smartSearchBtn">Ask AI</button>
+        </div>
+        <div class="chip-row">
+          <button class="query-chip">Show invoices from Amazon</button>
+          <button class="query-chip">Find all resignation emails</button>
+          <button class="query-chip">Emails needing my reply today</button>
+          <button class="query-chip">High priority emails this week</button>
+        </div>
+        <div class="card table-card" id="searchResultsCard" style="display:none;">
+          <div class="card-head"><h3>Results</h3></div>
+          <table class="data-table">
+            <thead><tr><th>Sender</th><th>Subject</th><th>Category</th><th>Time</th></tr></thead>
+            <tbody id="searchResultsBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ================= ORGANIZATION ================= -->
+      <section class="page" id="page-organization">
+        <div class="page-head">
+          <div><h1>Organization</h1><p>Manage departments, teams and roles.</p></div>
+          <button class="btn btn-primary"><i class="fa-solid fa-user-plus"></i> Invite Member</button>
+        </div>
+        <div class="org-grid" id="orgGrid"></div>
+        <div class="card table-card">
+          <div class="card-head"><h3>Members</h3></div>
+          <table class="data-table">
+            <thead><tr><th>Name</th><th>Department</th><th>Role</th><th>Status</th></tr></thead>
+            <tbody id="orgBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ================= LICENSE ================= -->
+      <section class="page" id="page-license">
+        <div class="page-head">
+          <div><h1>License Management</h1><p>Generate, activate and monitor organization licenses.</p></div>
+          <button class="btn btn-primary"><i class="fa-solid fa-plus"></i> Generate License</button>
+        </div>
+        <div class="license-grid">
+          <div class="license-card current">
+            <span class="badge badge-green">Active</span>
+            <h3>Enterprise Plan</h3>
+            <p class="license-key">AIML-ENT-7X29-QK41</p>
+            <div class="license-meta"><span>Seats</span><strong>250 / 300</strong></div>
+            <div class="license-meta"><span>Expires</span><strong>14 Mar 2027</strong></div>
+            <div class="progress-bar"><div class="progress-fill" style="width:83%"></div></div>
+          </div>
+          <div class="card table-card license-table">
+            <div class="card-head"><h3>License History</h3></div>
+            <table class="data-table">
+              <thead><tr><th>Key</th><th>Type</th><th>Status</th><th>Action</th></tr></thead>
+              <tbody id="licenseBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= SETTINGS ================= -->
+      <section class="page" id="page-settings">
+        <div class="page-head">
+          <div><h1>Settings</h1><p>Manage your account, security and integrations.</p></div>
+        </div>
+        <div class="settings-layout">
+          <div class="tab-group vertical" id="settingsTabs">
+            <button class="tab active" data-tab="profile"><i class="fa-solid fa-user"></i> Profile</button>
+            <button class="tab" data-tab="security"><i class="fa-solid fa-lock"></i> Security</button>
+            <button class="tab" data-tab="integrations"><i class="fa-solid fa-plug"></i> Integrations</button>
+            <button class="tab" data-tab="notifications"><i class="fa-solid fa-bell"></i> Notifications</button>
+          </div>
+
+          <div class="settings-panel">
+            <div class="settings-tab active" id="tab-profile">
+              <div class="card">
+                <div class="card-head"><h3>Profile Information</h3></div>
+                <div class="form-grid">
+                  <label>Full Name<input type="text" value="Aditi Kapoor"></label>
+                  <label>Email<input type="email" value="aditi.kapoor@company.com"></label>
+                  <label>Role<input type="text" value="Administrator" disabled></label>
+                  <label>Department<input type="text" value="IT Operations"></label>
+                </div>
+                <button class="btn btn-primary">Save Changes</button>
+              </div>
+            </div>
+
+            <div class="settings-tab" id="tab-security">
+              <div class="card">
+                <div class="card-head"><h3>Security</h3></div>
+                <div class="switch-row"><div><strong>Multi-Factor Authentication</strong><p>Add an extra layer of security to your account.</p></div><label class="switch"><input type="checkbox" checked><span></span></label></div>
+                <div class="switch-row"><div><strong>Login Alerts</strong><p>Get notified of new device sign-ins.</p></div><label class="switch"><input type="checkbox" checked><span></span></label></div>
+                <button class="btn btn-outline">Change Password</button>
+              </div>
+            </div>
+
+            <div class="settings-tab" id="tab-integrations">
+              <div class="card">
+                <div class="card-head"><h3>Connected Mailboxes</h3></div>
+                <div class="integration-row"><i class="fa-brands fa-google" style="color:#EA4335"></i><div><strong>Gmail</strong><p>Connected — synced 2 min ago</p></div><span class="badge badge-green">Connected</span></div>
+                <div class="integration-row"><i class="fa-brands fa-microsoft" style="color:#00A4EF"></i><div><strong>Outlook</strong><p>Not connected</p></div><button class="btn btn-outline small">Connect</button></div>
+                <div class="integration-row"><i class="fa-solid fa-server" style="color:#6C5CE7"></i><div><strong>Exchange</strong><p>Not connected</p></div><button class="btn btn-outline small">Connect</button></div>
+              </div>
+            </div>
+
+            <div class="settings-tab" id="tab-notifications">
+              <div class="card">
+                <div class="card-head"><h3>Notifications</h3></div>
+                <div class="switch-row"><div><strong>High Risk Threat Alerts</strong><p>Immediate alert for high-risk emails.</p></div><label class="switch"><input type="checkbox" checked><span></span></label></div>
+                <div class="switch-row"><div><strong>Daily Summary Digest</strong><p>Receive a daily inbox summary at 9 AM.</p></div><label class="switch"><input type="checkbox" checked><span></span></label></div>
+                <div class="switch-row"><div><strong>Product Updates</strong><p>News about new AI Emailer features.</p></div><label class="switch"><input type="checkbox"><span></span></label></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
     </main>
-
+  </div>
 </div>
 
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-<script src="app.js"></script>
-
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script src="js/data.js"></script>
+<script src="js/script.js"></script>
 </body>
 </html>
