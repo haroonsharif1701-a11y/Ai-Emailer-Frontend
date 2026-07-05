@@ -1,0 +1,199 @@
+/* ==========================================================================
+   Auth (Login) — reuses tokens from style.css, no new palette introduced
+   ========================================================================== */
+
+.auth-body{
+  min-height:100vh;
+  background:var(--bg);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.auth-theme-toggle{
+  position:fixed;
+  top:20px;
+  right:20px;
+  z-index:20;
+  background:var(--card-bg);
+  box-shadow:var(--shadow);
+}
+
+.auth-wrap{
+  width:100%;
+  max-width:960px;
+  min-height:600px;
+  margin:32px;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  background:var(--card-bg);
+  border:1px solid var(--border);
+  border-radius:20px;
+  box-shadow:var(--shadow-md);
+  overflow:hidden;
+}
+
+.auth-side{
+  padding:44px;
+  display:flex;
+  flex-direction:column;
+}
+
+/* -------- Left brand panel -------- */
+.auth-side:first-child{
+  background:linear-gradient(160deg,var(--active-pill) 0%, #2C3A6E 100%);
+  color:#fff;
+  position:relative;
+  justify-content:center;
+  overflow:hidden;
+}
+.auth-side:first-child .brand-name,
+.auth-side:first-child .brand-tag{color:#fff;}
+.auth-side:first-child .brand-tag{opacity:.7;}
+
+.auth-side-title{
+  font-size:26px;
+  font-weight:800;
+  letter-spacing:-.4px;
+  margin:28px 0 10px;
+  line-height:1.3;
+  position:relative;
+  z-index:1;
+}
+.auth-side-sub{
+  font-size:13.5px;
+  color:rgba(255,255,255,.75);
+  line-height:1.6;
+  max-width:340px;
+  position:relative;
+  z-index:1;
+}
+.auth-feature-list{
+  margin-top:32px;
+  display:flex;
+  flex-direction:column;
+  gap:16px;
+  position:relative;
+  z-index:1;
+}
+.auth-feature-list li{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  font-size:13px;
+  font-weight:500;
+  color:rgba(255,255,255,.92);
+}
+.auth-feature-list i{
+  width:32px;
+  height:32px;
+  border-radius:9px;
+  background:rgba(255,255,255,.12);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:13px;
+  flex-shrink:0;
+}
+.auth-side-glow{
+  position:absolute;
+  width:340px;height:340px;
+  border-radius:50%;
+  background:radial-gradient(circle,rgba(255,255,255,.14),transparent 70%);
+  right:-120px;
+  bottom:-140px;
+}
+
+/* -------- Right form panel -------- */
+.auth-side-form{justify-content:center;}
+.auth-card{width:100%;max-width:340px;margin:0 auto;}
+.auth-card h1{font-size:22px;font-weight:800;letter-spacing:-.3px;}
+.auth-sub{font-size:13px;color:var(--text-muted);margin-top:4px;margin-bottom:24px;}
+
+.oauth-row{display:flex;gap:10px;margin-bottom:20px;}
+.oauth-btn{flex:1;justify-content:center;}
+
+.auth-divider{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  margin-bottom:20px;
+  font-size:11.5px;
+  color:var(--text-muted);
+}
+.auth-divider:before,
+.auth-divider:after{
+  content:"";
+  flex:1;
+  height:1px;
+  background:var(--border);
+}
+
+.auth-label{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  font-size:12px;
+  font-weight:600;
+  color:var(--text-mid);
+  margin-bottom:16px;
+}
+.auth-label input{
+  padding:11px 13px;
+  border:1px solid var(--border);
+  border-radius:10px;
+  font-size:13.5px;
+  font-weight:400;
+  color:var(--text-dark);
+  background:var(--bg);
+  outline:none;
+  transition:border-color .15s;
+}
+.auth-label input:focus{border-color:var(--primary);}
+.field-error{color:var(--danger);font-size:11.5px;font-weight:500;min-height:14px;}
+
+.password-field{position:relative;display:flex;}
+.password-field input{width:100%;padding-right:40px;}
+.pw-toggle{
+  position:absolute;
+  right:10px;top:50%;transform:translateY(-50%);
+  color:var(--text-muted);
+  font-size:13px;
+}
+.pw-toggle:hover{color:var(--primary);}
+
+.auth-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin-bottom:20px;
+}
+.checkbox-row{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  font-size:12.5px;
+  color:var(--text-mid);
+  cursor:pointer;
+}
+.checkbox-row input{accent-color:var(--primary);width:15px;height:15px;}
+
+.auth-footer{
+  text-align:center;
+  font-size:12.5px;
+  color:var(--text-muted);
+  margin-top:20px;
+}
+
+.shake{animation:shake .3s;}
+@keyframes shake{
+  0%,100%{transform:translateX(0);}
+  25%{transform:translateX(-6px);}
+  75%{transform:translateX(6px);}
+}
+
+@media (max-width:760px){
+  .auth-wrap{grid-template-columns:1fr;max-width:420px;}
+  .auth-side:first-child{display:none;}
+  .auth-side{padding:36px 28px;}
+}
