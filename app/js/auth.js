@@ -1,7 +1,6 @@
 /* ==========================================================================
-   Auth page logic — client-side only for now.
-   Replace the setTimeout block in handleLogin() with a real call to
-   POST /api/auth/login once the ASP.NET Core endpoint exists.
+   Auth page logic — now calls the real ASP.NET Core /api/auth/login
+   endpoint. Requires js/api.js to be loaded first (see login.html).
    ========================================================================== */
 $(function () {
 
@@ -38,7 +37,7 @@ $(function () {
     return ok;
   }
 
-  $("#loginForm").on("submit", function (e) {
+  $("#loginForm").on("submit", async function (e) {
     e.preventDefault();
 
     if (!validate()) {
@@ -50,12 +49,18 @@ $(function () {
     const $btn = $("#loginBtn");
     $btn.prop("disabled", true).html('<i class="fa-solid fa-spinner fa-spin"></i> Signing in...');
 
-    
-    
-    // TODO: replace with real request:
-    // $.ajax({ url: "/api/auth/login", method: "POST", data: {...} })
-    setTimeout(() => {
+    try {
+      const result = await apiFetch("/api/auth/login", {
+        method: "POST",
+        body: { email: $("#email").val().trim(), password: $("#password").val() },
+      });
+      setToken(result.token);
       window.location.href = "index.html";
-    }, 700);
+    } catch (err) {
+      $("#passwordError").text(err.message || "Sign in failed. Try again.");
+      $(".auth-card").addClass("shake");
+      setTimeout(() => $(".auth-card").removeClass("shake"), 300);
+      $btn.prop("disabled", false).html('<i class="fa-solid fa-arrow-right-to-bracket"></i> Sign In');
+    }
   });
 });

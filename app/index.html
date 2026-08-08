@@ -280,10 +280,11 @@
         <div class="page-head">
           <div><h1>Attachment Analyzer</h1><p>AI-read summaries of PDFs, DOCX, Excel &amp; scanned images.</p></div>
         </div>
-        <div class="dropzone">
+        <div class="dropzone" id="attachDropzone">
           <i class="fa-solid fa-cloud-arrow-up"></i>
           <p>Drag &amp; drop a file here, or <span>browse</span></p>
           <span class="dz-sub">Supports PDF, DOCX, XLSX, PNG, JPG</span>
+          <input type="file" id="attachFileInput" accept=".pdf,.docx,.xlsx,.png,.jpg,.jpeg" style="display:none;">
         </div>
         <div class="attach-grid" id="attachGrid"></div>
       </section>
@@ -415,10 +416,19 @@
   </div>
 </div>
 
+<script>
+  // Guard: bounce to login if there's no token. This is a UX convenience
+  // only — the real protection is [Authorize] on the API controllers,
+  // since anyone can edit localStorage in devtools.
+  if (!localStorage.getItem("ai-emailer-token")) {
+    window.location.href = "login.html";
+  }
+</script>
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 <script src="js/data.js"></script>
 <script src="js/theme.js"></script>
+<script src="js/api.js"></script>
 <script src="js/script.js"></script>
 </body>
 </html>

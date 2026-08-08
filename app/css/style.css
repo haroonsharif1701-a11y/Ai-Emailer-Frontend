@@ -304,7 +304,8 @@ ul{list-style:none;}
 /* ==========================================================================
    Attachments
    ========================================================================== */
-.dropzone{border:2px dashed var(--border);border-radius:var(--radius);padding:36px;text-align:center;color:var(--text-muted);margin-bottom:22px;background:var(--card-bg);}
+.dropzone{border:2px dashed var(--border);border-radius:var(--radius);padding:36px;text-align:center;color:var(--text-muted);margin-bottom:22px;background:var(--card-bg);cursor:pointer;transition:.15s;}
+.dropzone.dz-active{border-color:var(--primary);background:var(--bg);}
 .dropzone i{font-size:26px;color:var(--primary);margin-bottom:10px;}
 .dropzone p{font-size:13.5px;color:var(--text-mid);}
 .dropzone p span{color:var(--primary);font-weight:700;text-decoration:underline;cursor:pointer;}
@@ -316,6 +317,7 @@ ul{list-style:none;}
 .attach-top strong{font-size:13px;display:block;}
 .attach-top span{font-size:11px;color:var(--text-muted);}
 .attach-summary{font-size:12.5px;color:var(--text-mid);line-height:1.6;background:var(--bg);padding:10px;border-radius:8px;}
+.attach-threat{margin-top:10px;display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text-muted);}
 
 /* ==========================================================================
    Smart Search

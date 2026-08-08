@@ -119,30 +119,54 @@ $(function () {
     renderInbox($(this).data("filter"));
   });
 
-  $(document).on("click", ".inbox-item", function () {
+  $(document).on("click", ".inbox-item", async function () {
     $(".inbox-item").removeClass("selected");
     $(this).addClass("selected");
     const id = $(this).data("id");
     const e = EMAILS.find(x => x.id === id);
+
+    // Static header/meta renders immediately; only the AI summary block waits on the network.
     $("#inboxDetail").html(`
       <p class="detail-subject">${e.subject}</p>
       <p class="detail-from">From: ${e.name.toLowerCase().replace(" ", ".")}@${e.domain} • ${e.time}</p>
-      <div class="ai-summary-box">
+      <div class="ai-summary-box" id="aiSummaryBox">
         <h4><i class="fa-solid fa-wand-magic-sparkles"></i> AI Summary</h4>
-        <p>${e.preview} The AI has classified this as <strong>${e.category}</strong> with a <strong>${e.sentiment.toLowerCase()}</strong> tone and flagged it as <strong>${e.risk}</strong>.</p>
+        <p><i class="fa-solid fa-spinner fa-spin"></i> Generating summary...</p>
       </div>
-      <div class="detail-meta-grid">
-        <div class="detail-meta-item"><span>Priority</span><strong>${e.risk === "Safe" ? "Normal" : "High"}</strong></div>
+      <div class="detail-meta-grid" id="detailMetaGrid">
+        <div class="detail-meta-item"><span>Priority</span><strong>—</strong></div>
         <div class="detail-meta-item"><span>Sentiment</span><strong>${e.sentiment}</strong></div>
         <div class="detail-meta-item"><span>Category</span><strong>${e.category}</strong></div>
         <div class="detail-meta-item"><span>Confidence</span><strong>${e.confidence}%</strong></div>
       </div>
-      <ul class="action-list">
-        <li><i class="fa-solid fa-circle-check"></i> Reply expected by end of day</li>
-        <li><i class="fa-solid fa-circle-check"></i> No meeting time detected</li>
-        <li><i class="fa-solid fa-circle-check"></i> ${e.risk === "Safe" ? "No threats found" : "Review before opening links/attachments"}</li>
-      </ul>
+      <ul class="action-list" id="actionList"></ul>
     `);
+
+    // Cache on the email object so re-clicking the same email doesn't burn another API call.
+    if (!e.aiSummary) {
+      try {
+        e.aiSummary = await apiFetch("/api/summary/generate", {
+          method: "POST",
+          body: { sender: e.name, subject: e.subject, emailBody: e.body },
+        });
+      } catch (err) {
+        e.aiSummary = { error: err.message };
+      }
+    }
+
+    // Bail out silently if the user already clicked a different email while this was in flight.
+    if ($(".inbox-item.selected").data("id") !== id) return;
+
+    if (e.aiSummary.error) {
+      $("#aiSummaryBox p").html(`Couldn't generate a summary: ${e.aiSummary.error}`);
+      return;
+    }
+
+    $("#aiSummaryBox p").text(e.aiSummary.summary);
+    $("#detailMetaGrid .detail-meta-item").eq(0).find("strong").text(e.aiSummary.priority);
+    $("#actionList").html(
+      e.aiSummary.actionItems.map(item => `<li><i class="fa-solid fa-circle-check"></i> ${item}</li>`).join("")
+    );
   });
 
   /* ---------------- THREAT DETECTION ---------------- */
@@ -208,26 +232,35 @@ $(function () {
   }
 
   /* ---------------- AI REPLY GENERATOR ---------------- */
-  const REPLY_TEMPLATES = {
-    Professional: "Hi Rahul,\n\nThanks for the follow-up. I've reviewed the pricing sheet and everything looks aligned with our earlier discussion. I'll have the signed copy sent over by Thursday, ahead of your Friday deadline.\n\nHappy to jump on a quick call if it helps close this out faster.\n\nBest regards,\nAditi",
-    Friendly: "Hey Rahul!\n\nThanks so much for checking in :) I've gone through the pricing sheet and it looks good on our end. I'll get the signed copy to you by Thursday, so you're covered before Friday.\n\nLet me know if a quick call would help — happy to hop on one!\n\nCheers,\nAditi",
-    Formal: "Dear Mr. Mehta,\n\nThank you for your correspondence regarding the Q3 vendor contract renewal. Please be advised that the pricing sheet has been reviewed and confirmed. The signed agreement will be forwarded to you by Thursday, prior to the stated deadline.\n\nShould a discussion be required, I remain available at your convenience.\n\nSincerely,\nAditi Kapoor",
-    Custom: "Hi Rahul,\n\n[Add your custom opening here]\n\nRegarding the pricing sheet and signed copy — confirming both will be ready ahead of Friday. Let me know your preferred next step.\n\nRegards,\nAditi",
-  };
+  // The original email shown in this page is still a hardcoded sample
+  // (see .reply-original in index.html) until Module 4 (real mailbox
+  // integration) exists. Once emails are real, read the body from the
+  // selected thread instead of the static ro-body text below.
 
   $(".tone-chip").on("click", function () {
     $(".tone-chip").removeClass("active");
     $(this).addClass("active");
   });
 
-  $("#generateReplyBtn").on("click", function () {
+  $("#generateReplyBtn").on("click", async function () {
     const tone = $(".tone-chip.active").data("tone");
+    const originalEmailBody = $(".ro-body").text().trim();
     const $btn = $(this);
+
     $btn.prop("disabled", true).html('<i class="fa-solid fa-spinner fa-spin"></i> Generating...');
-    setTimeout(() => {
-      $("#replyOutput").val(REPLY_TEMPLATES[tone]);
+    $("#replyOutput").val("");
+
+    try {
+      const result = await apiFetch("/api/reply/generate", {
+        method: "POST",
+        body: { originalEmailBody, tone, senderName: "Rahul" },
+      });
+      $("#replyOutput").val(result.draft);
+    } catch (err) {
+      $("#replyOutput").val(`Couldn't generate a reply: ${err.message}`);
+    } finally {
       $btn.prop("disabled", false).html('<i class="fa-solid fa-wand-magic-sparkles"></i> Generate Reply');
-    }, 700);
+    }
   });
 
   $("#copyReplyBtn").on("click", function () {
@@ -240,16 +273,79 @@ $(function () {
   });
 
   /* ---------------- ATTACHMENT ANALYZER ---------------- */
-  function renderAttachments() {
-    $("#attachGrid").html(ATTACHMENTS.map(a => `
+  function attachCardHtml(a) {
+    const threatClass = a.threatLevel === "High" ? "badge-red" : a.threatLevel === "Medium" ? "badge-amber" : "badge-green";
+    const threatRow = a.threatLevel
+      ? `<div class="attach-threat"><span class="badge ${threatClass}">${a.threatLevel} risk</span>${a.threatNotes ? ` <small>${a.threatNotes}</small>` : ""}</div>`
+      : "";
+    return `
       <div class="attach-card">
         <div class="attach-top">
-          <div class="attach-icon badge-${a.color}"><i class="fa-solid ${a.icon}"></i></div>
+          <div class="attach-icon badge-${a.color || "blue"}"><i class="fa-solid ${a.icon || "fa-file"}"></i></div>
           <div><strong>${a.name}</strong><span>${a.type}</span></div>
         </div>
         <div class="attach-summary">${a.summary}</div>
-      </div>`).join(""));
+        ${threatRow}
+      </div>`;
   }
+
+  function renderAttachments() {
+    $("#attachGrid").html(ATTACHMENTS.map(attachCardHtml).join(""));
+  }
+
+  function iconForExt(ext) {
+    if (ext === "pdf") return { icon: "fa-file-pdf", color: "red" };
+    if (ext === "docx") return { icon: "fa-file-word", color: "blue" };
+    if (ext === "xlsx") return { icon: "fa-file-excel", color: "green" };
+    return { icon: "fa-file-image", color: "purple" };
+  }
+
+  async function analyzeAndPrependFile(file) {
+    const tempId = `pending-${Date.now()}`;
+    const { icon, color } = iconForExt(file.name.split(".").pop().toLowerCase());
+
+    $("#attachGrid").prepend(`
+      <div class="attach-card" id="${tempId}">
+        <div class="attach-top">
+          <div class="attach-icon badge-${color}"><i class="fa-solid ${icon}"></i></div>
+          <div><strong>${file.name}</strong><span>Analyzing...</span></div>
+        </div>
+        <div class="attach-summary"><i class="fa-solid fa-spinner fa-spin"></i> Extracting text and running AI analysis...</div>
+      </div>
+    `);
+
+    try {
+      const result = await apiUpload("/api/attachment/analyze", file);
+      $(`#${tempId}`).replaceWith(attachCardHtml({
+        name: result.fileName, type: result.fileType, icon, color,
+        summary: result.summary, threatLevel: result.threatLevel, threatNotes: result.threatNotes,
+      }));
+    } catch (err) {
+      $(`#${tempId} .attach-summary`).html(`Couldn't analyze this file: ${err.message}`);
+      $(`#${tempId} span`).text("Failed");
+    }
+  }
+
+  $("#attachDropzone").on("click", () => $("#attachFileInput").trigger("click"));
+
+  $("#attachFileInput").on("change", function () {
+    if (this.files.length) analyzeAndPrependFile(this.files[0]);
+    this.value = ""; // allow re-selecting the same file later
+  });
+
+  $("#attachDropzone").on("dragover", function (e) {
+    e.preventDefault();
+    $(this).addClass("dz-active");
+  });
+  $("#attachDropzone").on("dragleave", function () {
+    $(this).removeClass("dz-active");
+  });
+  $("#attachDropzone").on("drop", function (e) {
+    e.preventDefault();
+    $(this).removeClass("dz-active");
+    const file = e.originalEvent.dataTransfer.files[0];
+    if (file) analyzeAndPrependFile(file);
+  });
 
   /* ---------------- SMART SEARCH ---------------- */
   function runSmartSearch(query) {
@@ -318,6 +414,11 @@ $(function () {
     $(this).addClass("active");
     $(".settings-tab").removeClass("active");
     $(`#tab-${tab}`).addClass("active");
+  });
+
+  /* ---------------- LOGOUT ---------------- */
+  $(".logout").on("click", function () {
+    clearToken();
   });
 
   /* ---------------- MOBILE SIDEBAR TOGGLE (safety net if narrow) ---------------- */
