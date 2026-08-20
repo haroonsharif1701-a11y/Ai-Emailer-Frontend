@@ -15,6 +15,15 @@ const EMAILS = [
   { id: 10, name: "Sales Ops", domain: "company.com", subject: "New Enterprise Lead — Acme Corp", preview: "Acme Corp has requested a demo for the enterprise plan next week...", body: "Hi,\n\nAcme Corp reached out through the website requesting a demo of the enterprise plan. They're a 400-person company evaluating us against two competitors, decision expected by end of quarter.\n\nCan you take the demo call? They're free Tuesday or Wednesday next week.\n\nSales Ops", category: "Sales", status: "Safe", risk: "Safe", time: "3 days ago", spf: true, dkim: true, dmarc: true, confidence: 96, sentiment: "Positive" },
 ];
 
+const ATTACHMENT_DETAILS = [
+  { size: "2.4 MB", uploadedOn: "May 16, 2025 • 10:24 AM", description: "Vendor contract covering commercial terms, renewal conditions, pricing, and termination rights.", keyTopics: ["Three-year agreement", "12% annual pricing escalation", "30-day termination notice"] },
+  { size: "1.1 MB", uploadedOn: "May 15, 2025 • 2:10 PM", description: "Employee policy handbook with updates to leave, remote-work, and conduct guidance.", keyTopics: ["21 annual leave days", "Revised work-from-home policy", "Effective next quarter"] },
+  { size: "856 KB", uploadedOn: "May 14, 2025 • 11:42 AM", description: "Quarterly departmental forecast with planned spend, actuals, and budget variances.", keyTopics: ["Marketing spend up 18%", "Budget 4% under forecast", "Quarterly department planning"] },
+  { size: "3.2 MB", uploadedOn: "May 12, 2025 • 9:05 AM", description: "OCR-extracted supplier invoice with payment details and due-date information.", keyTopics: ["Invoice #0912", "48,200 INR total", "Payment due in 15 days"] },
+];
+
+const enrichAttachments = () => ATTACHMENTS.forEach((attachment, index) => Object.assign(attachment, ATTACHMENT_DETAILS[index]));
+
 const CATEGORIES = [
   { name: "Invoice", icon: "fa-file-invoice-dollar", color: "blue", count: 1842 },
   { name: "HR", icon: "fa-users", color: "purple", count: 964 },

@@ -25,6 +25,10 @@ $(function () {
     $(".sidebar").removeClass("open");
     $("#content").scrollTop(0);
     window.scrollTo({ top: 0, behavior: "smooth" });
+    // Load profile whenever Settings page is opened
+    if (page === "settings") {
+        loadProfile();
+    }
   }
 
   $(".nav-item[data-page]").on("click", function (e) {
@@ -52,7 +56,24 @@ $(function () {
       </tr>`).join("");
     $("#recentEmailsBody").html(rows);
   }
+  /* LOGGED IN USER UI UPDATE */
+  function updateLoggedInUserUI(profile) {
 
+  if (!profile)
+    return;
+
+  const fullName = profile.fullName || "User";
+  const roleName = profile.roleName || "";
+
+  $("#loggedInUserName").text(fullName);
+  $("#loggedInUserRole").text(roleName);
+
+  $("#dashboardUserName").text(fullName);
+
+  $("#loggedInUserAvatar").text(
+    initials(fullName)
+  );
+}
   /* ---------------- DASHBOARD: Charts ---------------- */
   function renderDashboardCharts() {
     const ctx1 = document.getElementById("activityChart");
@@ -232,10 +253,47 @@ $(function () {
   }
 
   /* ---------------- AI REPLY GENERATOR ---------------- */
-  // The original email shown in this page is still a hardcoded sample
-  // (see .reply-original in index.html) until Module 4 (real mailbox
-  // integration) exists. Once emails are real, read the body from the
-  // selected thread instead of the static ro-body text below.
+  let selectedReplyEmail = null;
+
+  function renderReplyInbox() {
+    $("#replyInboxItems").html(EMAILS.map(e => `
+      <button class="reply-inbox-item${selectedReplyEmail?.id === e.id ? " selected" : ""}" type="button" data-reply-email-id="${e.id}">
+        <div class="mini-avatar">${escapeHtml(initials(e.name))}</div>
+        <div class="reply-inbox-item-body">
+          <div class="reply-inbox-item-top"><strong>${escapeHtml(e.name)}</strong><span>${escapeHtml(e.time)}</span></div>
+          <div class="reply-inbox-item-subj">${escapeHtml(e.subject)}</div>
+          <div class="reply-inbox-item-preview">${escapeHtml(e.preview)}</div>
+          <div class="inbox-item-tags"><span class="badge badge-${catColor(e.category)}">${escapeHtml(e.category)}</span>${e.risk !== "Safe" ? riskBadge(e.risk) : ""}</div>
+        </div>
+      </button>`).join(""));
+  }
+
+  function showReplyComposer(email) {
+    const isDifferentEmail = selectedReplyEmail?.id !== email.id;
+    selectedReplyEmail = email;
+    $("#replyOriginal").html(`
+      <p class="ro-subject">${escapeHtml(email.subject)}</p>
+      <p class="ro-from">From: ${escapeHtml(email.name)} <span>•</span> ${escapeHtml(email.domain)}</p>
+      <p class="ro-body">${escapeHtml(email.body)}</p>`);
+    if (isDifferentEmail) $("#replyOutput").val('Click "Generate Reply" to draft a response...');
+    $("#replyInboxCard").attr("hidden", true);
+    $("#replyComposeCard").removeAttr("hidden");
+  }
+
+  $(document).on("click", ".reply-inbox-item", function () {
+    const email = EMAILS.find(item => item.id === $(this).data("reply-email-id"));
+    if (email) showReplyComposer(email);
+  });
+
+  $("#replyBackBtn").on("click", function () {
+    $("#replyComposeCard").attr("hidden", true);
+    $("#replyInboxCard").removeAttr("hidden");
+    renderReplyInbox();
+    const $focusTarget = $("#replyInboxItems .reply-inbox-item.selected").first().length
+      ? $("#replyInboxItems .reply-inbox-item.selected").first()
+      : $("#replyInboxItems .reply-inbox-item").first();
+    $focusTarget.trigger("focus");
+  });
 
   $(".tone-chip").on("click", function () {
     $(".tone-chip").removeClass("active");
@@ -244,7 +302,8 @@ $(function () {
 
   $("#generateReplyBtn").on("click", async function () {
     const tone = $(".tone-chip.active").data("tone");
-    const originalEmailBody = $(".ro-body").text().trim();
+    if (!selectedReplyEmail) return;
+    const originalEmailBody = selectedReplyEmail.body;
     const $btn = $(this);
 
     $btn.prop("disabled", true).html('<i class="fa-solid fa-spinner fa-spin"></i> Generating...');
@@ -253,7 +312,7 @@ $(function () {
     try {
       const result = await apiFetch("/api/reply/generate", {
         method: "POST",
-        body: { originalEmailBody, tone, senderName: "Rahul" },
+        body: { originalEmailBody, tone, senderName: selectedReplyEmail.name },
       });
       $("#replyOutput").val(result.draft);
     } catch (err) {
@@ -273,23 +332,78 @@ $(function () {
   });
 
   /* ---------------- ATTACHMENT ANALYZER ---------------- */
-  function attachCardHtml(a) {
-    const threatClass = a.threatLevel === "High" ? "badge-red" : a.threatLevel === "Medium" ? "badge-amber" : "badge-green";
-    const threatRow = a.threatLevel
-      ? `<div class="attach-threat"><span class="badge ${threatClass}">${a.threatLevel} risk</span>${a.threatNotes ? ` <small>${a.threatNotes}</small>` : ""}</div>`
-      : "";
+  const escapeHtml = (value) => $("<div>").text(value ?? "").html();
+  const safeHttpUrl = (value) => {
+    if (!value || typeof value !== "string") return null;
+    try {
+      const url = new URL(value, window.location.href);
+      return url.protocol === "https:" || url.protocol === "http:" ? url.href : null;
+    } catch {
+      return null;
+    }
+  };
+  let lastModalTrigger = null;
+
+  function attachmentModalHtml(a) {
+    const topics = Array.isArray(a.keyTopics) && a.keyTopics.length
+      ? `<ul class="attachment-modal__topics">${a.keyTopics.map(topic => `<li>${escapeHtml(topic)}</li>`).join("")}</ul>`
+      : '<p class="attachment-modal__empty">No key topics were returned for this analysis.</p>';
+    const action = (label, icon, url) => safeHttpUrl(url)
+      ? `<a class="attachment-modal__action" href="${escapeHtml(safeHttpUrl(url))}" target="_blank" rel="noopener noreferrer"><i class="fa-solid ${icon}"></i>${label}</a>`
+      : `<button class="attachment-modal__action" type="button" disabled title="Available when the attachment is stored"><i class="fa-solid ${icon}"></i>${label}</button>`;
+
     return `
-      <div class="attach-card">
-        <div class="attach-top">
-          <div class="attach-icon badge-${a.color || "blue"}"><i class="fa-solid ${a.icon || "fa-file"}"></i></div>
-          <div><strong>${a.name}</strong><span>${a.type}</span></div>
-        </div>
-        <div class="attach-summary">${a.summary}</div>
-        ${threatRow}
+      <header class="attachment-modal__header">
+        <div class="attachment-modal__file-icon badge-${escapeHtml(a.color || "blue")}"><i class="fa-solid ${escapeHtml(a.icon || "fa-file")}"></i></div>
+        <div><h2 id="attachmentModalTitle">${escapeHtml(a.name)}</h2><p>${escapeHtml(a.type || "Attachment")} <span>•</span> ${escapeHtml(a.size || "Size unavailable")}</p></div>
+      </header>
+      <div class="attachment-modal__actions">${action("Preview", "fa-eye", a.previewUrl)}${action("Download", "fa-download", a.downloadUrl)}</div>
+      <div class="attachment-modal__body">
+        <section class="attachment-modal__summary"><h3><i class="fa-solid fa-file-lines"></i> Attachment Summary</h3><div class="attachment-modal__summary-copy"><p>${escapeHtml(a.summary || "Analysis summary is unavailable.")}</p></div></section>
+        <aside class="attachment-modal__info"><h3>File Information</h3><dl>
+          <div><dt><i class="fa-solid fa-file"></i> File Name</dt><dd>${escapeHtml(a.name)}</dd></div>
+          <div><dt><i class="fa-solid fa-file-lines"></i> File Type</dt><dd>${escapeHtml(a.type || "Unavailable")}</dd></div>
+          <div><dt><i class="fa-regular fa-hard-drive"></i> File Size</dt><dd>${escapeHtml(a.size || "Unavailable")}</dd></div>
+          <div><dt><i class="fa-regular fa-calendar"></i> Analyzed On</dt><dd>${escapeHtml(a.uploadedOn || "Unavailable")}</dd></div>
+        </dl><div class="attachment-modal__description"><h4><i class="fa-regular fa-note-sticky"></i> Description</h4><p>${escapeHtml(a.description || "No description was returned.")}</p></div></aside>
       </div>`;
   }
 
+  function openAttachmentModal(attachment, trigger) {
+    lastModalTrigger = trigger;
+    $("#attachmentModalContent").html(attachmentModalHtml(attachment));
+    $("#attachmentModal").attr("aria-hidden", "false").addClass("is-open");
+    $("body").addClass("modal-open");
+    $("#attachmentModal .attachment-modal__close").trigger("focus");
+  }
+
+  function closeAttachmentModal() {
+    $("#attachmentModal").attr("aria-hidden", "true").removeClass("is-open");
+    $("body").removeClass("modal-open");
+    if (lastModalTrigger) $(lastModalTrigger).trigger("focus");
+  }
+
+  function attachCardHtml(a) {
+    const threatClass = a.threatLevel === "High" ? "badge-red" : a.threatLevel === "Medium" ? "badge-amber" : "badge-green";
+    const threatRow = a.threatLevel
+      ? `<div class="attach-threat"><span class="badge ${threatClass}">${escapeHtml(a.threatLevel)} risk</span>${a.threatNotes ? ` <small>${escapeHtml(a.threatNotes)}</small>` : ""}</div>`
+      : "";
+    return `
+      <button class="attach-card" type="button" data-attachment-id="${escapeHtml(a.id)}" aria-label="View analysis for ${escapeHtml(a.name)}">
+        <div class="attach-top">
+          <div class="attach-icon badge-${escapeHtml(a.color || "blue")}"><i class="fa-solid ${escapeHtml(a.icon || "fa-file")}"></i></div>
+          <div><strong>${escapeHtml(a.name)}</strong><span>${escapeHtml(a.type)}</span></div>
+        </div>
+        <div class="attach-summary" data-tooltip="${escapeHtml(a.summary)}"><span class="attach-summary__text">${escapeHtml(a.summary)}</span></div>
+        ${threatRow}
+      </button>`;
+  }
+
   function renderAttachments() {
+    enrichAttachments();
+    ATTACHMENTS.forEach((attachment, index) => {
+      attachment.id ||= `attachment-${index}`;
+    });
     $("#attachGrid").html(ATTACHMENTS.map(attachCardHtml).join(""));
   }
 
@@ -308,7 +422,7 @@ $(function () {
       <div class="attach-card" id="${tempId}">
         <div class="attach-top">
           <div class="attach-icon badge-${color}"><i class="fa-solid ${icon}"></i></div>
-          <div><strong>${file.name}</strong><span>Analyzing...</span></div>
+          <div><strong>${escapeHtml(file.name)}</strong><span>Analyzing...</span></div>
         </div>
         <div class="attach-summary"><i class="fa-solid fa-spinner fa-spin"></i> Extracting text and running AI analysis...</div>
       </div>
@@ -316,18 +430,28 @@ $(function () {
 
     try {
       const result = await apiUpload("/api/attachment/analyze", file);
-      $(`#${tempId}`).replaceWith(attachCardHtml({
-        name: result.fileName, type: result.fileType, icon, color,
-        summary: result.summary, threatLevel: result.threatLevel, threatNotes: result.threatNotes,
-      }));
+      const attachment = {
+        id: `attachment-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+        name: result.fileName || file.name, type: result.fileType || file.type || "Attachment", icon, color,
+        size: result.fileSize || `${Math.ceil(file.size / 1024)} KB`, uploadedOn: result.analyzedOn || new Date().toLocaleString(),
+        summary: result.summary, description: result.description, keyTopics: result.keyTopics,
+        previewUrl: result.previewUrl, downloadUrl: result.downloadUrl,
+        threatLevel: result.threatLevel, threatNotes: result.threatNotes,
+      };
+      ATTACHMENTS.unshift(attachment);
+      $(`#${tempId}`).replaceWith(attachCardHtml(attachment));
     } catch (err) {
-      $(`#${tempId} .attach-summary`).html(`Couldn't analyze this file: ${err.message}`);
+      $(`#${tempId} .attach-summary`).text(`Couldn't analyze this file: ${err.message}`);
       $(`#${tempId} span`).text("Failed");
     }
   }
 
-  $("#attachDropzone").on("click", () => $("#attachFileInput").trigger("click"));
-
+  // $("#attachDropzone").on("click", () => $("#attachFileInput").trigger("click"));
+  $("#attachDropzone").on("click", function (e) {
+  if (e.target.id !== "attachFileInput") {
+    $("#attachFileInput").trigger("click");
+  }
+});
   $("#attachFileInput").on("change", function () {
     if (this.files.length) analyzeAndPrependFile(this.files[0]);
     this.value = ""; // allow re-selecting the same file later
@@ -345,6 +469,15 @@ $(function () {
     $(this).removeClass("dz-active");
     const file = e.originalEvent.dataTransfer.files[0];
     if (file) analyzeAndPrependFile(file);
+  });
+
+  $(document).on("click", ".attach-card", function () {
+    const attachment = ATTACHMENTS.find(item => item.id === $(this).data("attachment-id"));
+    if (attachment) openAttachmentModal(attachment, this);
+  });
+  $(document).on("click", "[data-close-attachment-modal]", closeAttachmentModal);
+  $(document).on("keydown", function (e) {
+    if (e.key === "Escape" && $("#attachmentModal").hasClass("is-open")) closeAttachmentModal();
   });
 
   /* ---------------- SMART SEARCH ---------------- */
@@ -407,6 +540,123 @@ $(function () {
       </tr>`).join(""));
   }
 
+  /* ---------------- USERS (Settings tab) ---------------- */
+  let rolesCache = null; // fetched once, reused for both the list's role names and the form's dropdown
+
+  async function getRoles() {
+    if (rolesCache) return rolesCache;
+    rolesCache = await apiFetch("/api/role/list");
+    return rolesCache;
+  }
+
+  async function renderUsers() {
+    $("#userList").html('<p class="attach-preview-placeholder"><i class="fa-solid fa-spinner fa-spin"></i> Loading users...</p>');
+    try {
+      const users = await apiFetch("/api/user/list");
+      if (!users.length) {
+        $("#userList").html('<p class="attach-preview-placeholder">No users yet — add one to get started.</p>');
+        return;
+      }
+      $("#userList").html(users.map(u => `
+        <button class="reply-inbox-item user-list-item" type="button" data-user-id="${u.idUser}">
+          <div class="mini-avatar">${escapeHtml(initials(u.fullName))}</div>
+          <div class="reply-inbox-item-body">
+            <div class="reply-inbox-item-top"><strong>${escapeHtml(u.fullName)}</strong>${u.isActive ? "" : '<span class="badge badge-amber">Inactive</span>'}</div>
+            <span class="reply-inbox-item-preview">${escapeHtml(u.username)}</span>
+          </div>
+        </button>`).join(""));
+    } catch (err) {
+      $("#userList").html(`<p class="attach-preview-placeholder">Couldn't load users: ${escapeHtml(err.message)}</p>`);
+    }
+  }
+
+  async function populateRoleDropdown(selectedId) {
+    const roles = await getRoles();
+    $("#userFormRole").html(roles.map(r =>
+      `<option value="${r.idRole}" ${r.idRole === selectedId ? "selected" : ""}>${escapeHtml(r.roleName)}</option>`
+    ).join(""));
+  }
+
+  async function openUserModal(mode, user) {
+    $("#userFormError").text("");
+    $("#userModalForm")[0].reset();
+    $("#userModalForm").data("mode", mode).attr("data-id-user", user ? user.idUser : 0);
+
+    if (mode === "add") {
+      $("#userModalTitle").text("Add User");
+      $("#userFormPasswordLabel").html('Password<input type="password" id="userFormPassword" autocomplete="new-password" required>');
+      await populateRoleDropdown(null);
+    } else {
+      $("#userModalTitle").text("Edit User");
+      $("#userFormFullName").val(user.fullName);
+      $("#userFormUsername").val(user.username);
+      // Password left blank on edit — the backend keeps the existing hash
+      // unless something is actually typed here.
+      $("#userFormPasswordLabel").html('Password<input type="password" id="userFormPassword" autocomplete="new-password" placeholder="Leave blank to keep the current password">');
+      await populateRoleDropdown(user.idRole);
+    }
+
+    $("#userModal").attr("aria-hidden", "false").addClass("is-open");
+    $("body").addClass("modal-open");
+  }
+
+  
+  function closeUserModal() {
+    $("#userModal").attr("aria-hidden", "true").removeClass("is-open");
+    $("body").removeClass("modal-open");
+  }
+
+  $("#addUserBtn").on("click", () => openUserModal("add", null));
+
+  $(document).on("click", ".user-list-item", async function () {
+    const idUser = $(this).data("user-id");
+    try {
+      const user = await apiFetch(`/api/user/${idUser}`);
+      openUserModal("edit", user);
+    } catch (err) {
+      alert(`Couldn't load this user: ${err.message}`);
+    }
+  });
+
+  $(document).on("click", "[data-close-user-modal]", closeUserModal);
+  $(document).on("keydown", function (e) {
+    if (e.key === "Escape" && $("#userModal").hasClass("is-open")) closeUserModal();
+  });
+
+  $("#userModalForm").on("submit", async function (e) {
+    e.preventDefault();
+    const mode = $(this).data("mode");
+    const idUser = parseInt($(this).attr("data-id-user"), 10) || 0;
+    const password = $("#userFormPassword").val();
+
+    if (mode === "add" && !password) {
+      $("#userFormError").text("Password is required for a new user.");
+      return;
+    }
+
+    const $btn = $("#userFormSaveBtn");
+    $btn.prop("disabled", true).text("Saving...");
+
+    try {
+      await apiFetch("/api/user/addupd", {
+        method: "POST",
+        body: {
+          idUser,
+          username: $("#userFormUsername").val().trim(),
+          fullName: $("#userFormFullName").val().trim(),
+          password: password || null,
+          idRole: parseInt($("#userFormRole").val(), 10),
+        },
+      });
+      closeUserModal();
+      renderUsers(); // re-fetch rather than patch the DOM in place — simplest way to stay correct after add or edit
+    } catch (err) {
+      $("#userFormError").text(err.message);
+    } finally {
+      $btn.prop("disabled", false).text("Save");
+    }
+  });
+
   /* ---------------- SETTINGS TABS ---------------- */
   $("#settingsTabs .tab").on("click", function () {
     const tab = $(this).data("tab");
@@ -414,13 +664,19 @@ $(function () {
     $(this).addClass("active");
     $(".settings-tab").removeClass("active");
     $(`#tab-${tab}`).addClass("active");
+    
+    
+    if (tab === "users") renderUsers();
   });
-
-  /* ---------------- LOGOUT ---------------- */
+ 
+     /* ---------------- LOGOUT ---------------- */
+  // $(".logout").on("click", function () {
+  //   clearToken();
+  // });
   $(".logout").on("click", function () {
-    clearToken();
+    logout();
   });
-
+  
   /* ---------------- MOBILE SIDEBAR TOGGLE (safety net if narrow) ---------------- */
   $(document).on("click", ".search-box input", function () {
     $(".sidebar").removeClass("open");
@@ -430,10 +686,101 @@ $(function () {
   renderRecentEmails();
   renderDashboardCharts();
   renderInbox();
+  renderReplyInbox();
   renderThreat();
   renderClassification();
   renderSentiment();
   renderAttachments();
   renderOrganization();
   renderLicense();
+//  loadProfile();
+  /* ---------------- PROFILE ---------------- */
+
+let currentProfile = null;
+
+async function loadProfile() {
+  const $error = $("#profileError");
+
+  $error.text("");
+
+  try {
+    const profile = await apiFetch("/api/user/me");
+
+    currentProfile = profile;
+
+    $("#profileFullName").val(profile.fullName ?? "");
+    $("#profileUsername").val(profile.username ?? "");
+    $("#profileRole").val(profile.roleName ?? "");
+    $("#profileOrganization").val(profile.orgName ?? "");
+
+    updateLoggedInUserUI(profile);
+
+  } catch (err) {
+    console.error("Failed to load profile:", err);
+    $error.text(`Couldn't load your profile: ${err.message}`);
+  }
+}
+$("#saveProfileBtn").on("click", async function () {
+
+  if (!currentProfile)
+    return;
+
+  const $btn = $(this);
+  const $error = $("#profileError");
+
+  $error.text("");
+
+  const fullName = $("#profileFullName").val().trim();
+  const username = $("#profileUsername").val().trim();
+
+  if (!fullName || !username) {
+    $error.text("Full name and email are required.");
+    return;
+  }
+
+  const originalText = $btn.text();
+
+  try {
+
+    $btn
+      .prop("disabled", true)
+      .text("Saving...");
+
+    await apiFetch("/api/user/addupd", {
+      method: "POST",
+      body: {
+        idUser: currentProfile.idUser,
+        username: username,
+        fullName: fullName,
+        password: null,
+        idRole: currentProfile.idRole
+      }
+    });
+
+    /*
+     * Reload from backend rather than modifying currentProfile
+     * manually. This guarantees the UI reflects the database.
+     */
+    await loadProfile();
+
+    $btn.text("Saved");
+
+    setTimeout(() => {
+      $btn.text(originalText);
+    }, 1500);
+
+  } catch (err) {
+
+    console.error("Failed to save profile:", err);
+
+    $error.text(
+      `Couldn't save your profile: ${err.message}`
+    );
+
+  } finally {
+
+    $btn.prop("disabled", false);
+  }
+});
+
 });

@@ -19,6 +19,10 @@ function setToken(token) {
 function clearToken() {
   localStorage.removeItem(TOKEN_KEY);
 }
+function logout() {
+  clearToken();
+  window.location.href = "login.html";
+}
 
 async function apiFetch(path, { method = "GET", body } = {}) {
   const headers = { "Content-Type": "application/json" };
@@ -29,6 +33,7 @@ async function apiFetch(path, { method = "GET", body } = {}) {
   try {
     response = await fetch(`${API_BASE_URL}${path}`, {
       method,
+      credentials: "include",
       headers,
       body: body ? JSON.stringify(body) : undefined,
     });
