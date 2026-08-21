@@ -26,6 +26,10 @@ $(function () {
     $("#content").scrollTop(0);
     window.scrollTo({ top: 0, behavior: "smooth" });
     // Load profile whenever Settings page is opened
+     if (page === "organization") {
+        renderOrganizationUsers();
+        loadOrganizationCardCounts();
+    } 
     if (page === "settings") {
         loadProfile();
     }
@@ -514,16 +518,110 @@ $(function () {
 
   /* ---------------- ORGANIZATION ---------------- */
   function renderOrganization() {
-    $("#orgGrid").html(ORG_STATS.map(s => `
-      <div class="org-card"><i class="fa-solid ${s.icon}"></i><strong>${s.value}</strong><span>${s.label}</span></div>
-    `).join(""));
-    $("#orgBody").html(MEMBERS.map(m => `
-      <tr>
-        <td><div class="sender-cell"><div class="mini-avatar">${initials(m.name)}</div><div><strong>${m.name}</strong></div></div></td>
-        <td>${m.dept}</td>
-        <td>${m.role}</td>
-        <td>${m.status === "Active" ? '<span class="badge badge-green">Active</span>' : '<span class="badge badge-amber">Invited</span>'}</td>
-      </tr>`).join(""));
+    $("#orgGrid").html(
+        // ORG_STATS.map(s => `
+        //     <div class="org-card">
+        //         <i class="fa-solid ${s.icon}"></i>
+        //         <strong>${s.value}</strong>
+        //         <span>${s.label}</span>
+        //     </div>
+        // `).join("")
+    );
+  }
+  async function loadOrganizationCardCounts() {
+    try {
+        const counts = await apiFetch("/api/organization/card-counts");
+
+        $("#totalUsers").text(counts.totalUser);
+        $("#totalDepartments").text(counts.totalDept);
+        $("#totalTeams").text(counts.totalTeams);
+        $("#totalAdmins").text(counts.totalAdmins);
+
+    } catch (err) {
+        console.error("Failed to load organization card counts:", err);
+
+        $("#totalUsers").text("—");
+        $("#totalDepartments").text("—");
+        $("#totalTeams").text("—");
+        $("#totalAdmins").text("—");
+    }
+}
+
+  async function renderOrganizationUsers() {
+    const $grid = $("#orgUsersGrid");
+    const $count = $("#orgMemberCount");
+
+    $grid.html(`
+        <div class="org-users-loading">
+            <i class="fa-solid fa-spinner fa-spin"></i>
+            Loading users...
+        </div>
+    `);
+
+    try {
+        const users = await apiFetch("/api/user/list");
+
+        $count.text(`${users.length} ${users.length === 1 ? "Member" : "Members"}`);
+
+        if (!users.length) {
+            $grid.html(`
+                <div class="org-users-empty">
+                    <i class="fa-solid fa-users"></i>
+                    <span>No users found in this organization.</span>
+                </div>
+            `);
+            return;
+        }
+
+        $grid.html(
+            users.map(u => `
+                <div class="org-user-card">
+                    <div class="user-avatar-wrapper">
+                        <div class="mini-avatar">
+                            ${initials(u.fullName)}
+                        </div>
+                        <div class="mini-avatar-name">
+                            ${escapeHtml(u.fullName)}
+                        </div>
+                    </div>
+
+                    <div class="org-user-info">
+                        <strong>${escapeHtml(u.fullName)}</strong>
+                        <span>${escapeHtml(u.username)}</span>
+                    </div>
+
+                    <div class="org-user-meta">
+                        <span class="badge badge-blue">
+                            ${escapeHtml(u.roleName ?? "User")}
+                        </span>
+
+                        ${
+                            u.deptName
+                                ? `<span class="org-user-dept">
+                                      ${escapeHtml(u.deptName)}
+                                   </span>`
+                                : ""
+                        }
+                        <span class="org-user-status">
+                            ${u.isActive ? ' <span class="badge badge-green" id="user-status">Active</span>' : 
+                              '<span class="badge badge-amber">Inactive</span>'}
+                        </span>
+                    </div>
+
+                </div>
+            `).join("")
+        );
+
+    } catch (err) {
+        console.error("Failed to load organization users:", err);
+
+        $grid.html(`
+            <div class="org-users-empty">
+                <i class="fa-solid fa-circle-exclamation"></i>
+                <span>Couldn't load organization users.</span>
+            </div>
+        `);
+    }
   }
 
   /* ---------------- LICENSE ---------------- */
@@ -586,6 +684,7 @@ $(function () {
       $("#userModalTitle").text("Add User");
       $("#userFormPasswordLabel").html('Password<input type="password" id="userFormPassword" autocomplete="new-password" required>');
       await populateRoleDropdown(null);
+      await populateDepartmentDropdown(null);
     } else {
       $("#userModalTitle").text("Edit User");
       $("#userFormFullName").val(user.fullName);
@@ -594,6 +693,7 @@ $(function () {
       // unless something is actually typed here.
       $("#userFormPasswordLabel").html('Password<input type="password" id="userFormPassword" autocomplete="new-password" placeholder="Leave blank to keep the current password">');
       await populateRoleDropdown(user.idRole);
+      await populateDepartmentDropdown(user.idDept);
     }
 
     $("#userModal").attr("aria-hidden", "false").addClass("is-open");
@@ -606,17 +706,46 @@ $(function () {
     $("body").removeClass("modal-open");
   }
 
+  async function populateDepartmentDropdown(selectedId) {
+    const departments = await apiFetch("/api/department/list");
+
+    $("#userFormDepartment").html(
+        `<option value="">No Department</option>` +
+        departments.map(d =>
+            `<option value="${d.idDept}" ${
+                d.idDept === selectedId ? "selected" : ""
+            }>
+                ${escapeHtml(d.deptName)}
+            </option>`
+        ).join("")
+    );
+}
   $("#addUserBtn").on("click", () => openUserModal("add", null));
 
-  $(document).on("click", ".user-list-item", async function () {
-    const idUser = $(this).data("user-id");
-    try {
-      const user = await apiFetch(`/api/user/${idUser}`);
-      openUserModal("edit", user);
-    } catch (err) {
-      alert(`Couldn't load this user: ${err.message}`);
+  $(document).on("click", ".user-list-item", async function (e) {
+    e.preventDefault();
+
+    const idUser = parseInt($(this).attr("data-user-id"), 10);
+
+    if (!idUser) {
+        console.error("Invalid user ID:", $(this).attr("data-user-id"));
+        return;
     }
-  });
+
+    console.log("Editing user ID:", idUser);
+
+    try {
+        const user = await apiFetch(`/api/user/${idUser}`);
+
+        console.log("User returned from API:", user);
+
+        await openUserModal("edit", user);
+
+    } catch (err) {
+        console.error("Failed to load user:", err);
+        alert(`Couldn't load this user: ${err.message}`);
+    }
+});
 
   $(document).on("click", "[data-close-user-modal]", closeUserModal);
   $(document).on("keydown", function (e) {
@@ -646,6 +775,7 @@ $(function () {
           fullName: $("#userFormFullName").val().trim(),
           password: password || null,
           idRole: parseInt($("#userFormRole").val(), 10),
+          idDept: $("#userFormDepartment").val() ? parseInt($("#userFormDepartment").val(), 10) : null
         },
       });
       closeUserModal();
@@ -655,6 +785,294 @@ $(function () {
     } finally {
       $btn.prop("disabled", false).text("Save");
     }
+  });
+
+
+  /* ---------------- DEPARTMENTS + TEAMS ---------------- */
+  let departmentsCache = null;
+  let teamsCache = null;
+  let currentTeamForMembers = null;
+
+  async function getDepartments(force = false) {
+    if (!force && departmentsCache) return departmentsCache;
+    departmentsCache = await apiFetch("/api/department/list");
+    return departmentsCache;
+  }
+
+  async function getTeams(force = false) {
+    if (!force && teamsCache) return teamsCache;
+    teamsCache = await apiFetch("/api/team/list");
+    return teamsCache;
+  }
+
+  async function renderDepartments() {
+    $("#departmentList").html('<p class="attach-preview-placeholder"><i class="fa-solid fa-spinner fa-spin"></i> Loading departments...</p>');
+    try {
+      const departments = await getDepartments(true);
+      if (!departments.length) {
+        $("#departmentList").html('<p class="attach-preview-placeholder">No departments yet — add one to get started.</p>');
+        return;
+      }
+
+      $("#departmentList").html(departments.map(d => `
+        <button class="settings-list-row department-list-item" type="button" data-id-dept="${d.idDept}">
+          <span class="mini-avatar"><i class="fa-solid fa-building"></i></span>
+          <span class="settings-list-main">
+            <span class="settings-list-title">${escapeHtml(d.deptName)}</span>
+            <span class="settings-list-sub">Department</span>
+          </span>
+          <span class="settings-list-action"><i class="fa-solid fa-pen"></i></span>
+        </button>
+      `).join(""));
+    } catch (err) {
+      $("#departmentList").html(`<p class="attach-preview-placeholder">Couldn't load departments: ${escapeHtml(err.message)}</p>`);
+    }
+  }
+
+  async function renderTeams() {
+    $("#teamList").html('<p class="attach-preview-placeholder"><i class="fa-solid fa-spinner fa-spin"></i> Loading teams...</p>');
+    try {
+      const teams = await getTeams(true);
+      if (!teams.length) {
+        $("#teamList").html('<p class="attach-preview-placeholder">No teams yet — add one to get started.</p>');
+        return;
+      }
+
+      $("#teamList").html(teams.map(t => `
+        <div class="settings-list-row">
+          <span class="mini-avatar"><i class="fa-solid fa-users"></i></span>
+          <span class="settings-list-main">
+            <span class="settings-list-title">${escapeHtml(t.team)}</span>
+            <span class="settings-list-sub">${escapeHtml(t.deptName)} • ${t.totalMembers} member${t.totalMembers === 1 ? "" : "s"}</span>
+          </span>
+          <span class="settings-list-action" style="display:flex;gap:6px">
+            <button type="button" class="icon-btn small-action edit-team-btn" title="Edit team"
+                    data-id-team="${t.idTeam}">
+              <i class="fa-solid fa-pen"></i>
+            </button>
+            <button type="button" class="icon-btn small-action manage-team-members-btn" title="Manage team members"
+                    data-id-team="${t.idTeam}" data-team-name="${escapeHtml(t.team)}">
+              <i class="fa-solid fa-user-check"></i>
+            </button>
+          </span>
+        </div>
+      `).join(""));
+    } catch (err) {
+      $("#teamList").html(`<p class="attach-preview-placeholder">Couldn't load teams: ${escapeHtml(err.message)}</p>`);
+    }
+  }
+
+  async function openDepartmentModal(mode, department = null) {
+    $("#departmentFormError").text("");
+    $("#departmentModalForm")[0].reset();
+    $("#departmentModalForm").attr("data-id-dept", department?.idDept || 0);
+    $("#departmentModalTitle").text(mode === "edit" ? "Edit Department" : "Add Department");
+    $("#departmentFormName").val(department?.deptName || "");
+    $("#departmentModal").attr("aria-hidden", "false").addClass("is-open");
+    $("body").addClass("modal-open");
+    $("#departmentFormName").trigger("focus");
+  }
+
+  function closeDepartmentModal() {
+    $("#departmentModal").attr("aria-hidden", "true").removeClass("is-open");
+    $("body").removeClass("modal-open");
+  }
+
+  async function openTeamModal(mode, team = null) {
+    $("#teamFormError").text("");
+    $("#teamModalForm")[0].reset();
+    $("#teamModalForm").attr("data-id-team", team?.idTeam || 0);
+    $("#teamModalTitle").text(mode === "edit" ? "Edit Team" : "Add Team");
+    $("#teamFormName").val(team?.team || "");
+
+    const departments = await getDepartments();
+    $("#teamFormDepartment").html(departments.map(d =>
+      `<option value="${d.idDept}" ${d.idDept === team?.idDept ? "selected" : ""}>${escapeHtml(d.deptName)}</option>`
+    ).join(""));
+
+    if (!departments.length) {
+      $("#teamFormError").text("Create a department before creating a team.");
+    }
+
+    $("#teamModal").attr("aria-hidden", "false").addClass("is-open");
+    $("body").addClass("modal-open");
+    $("#teamFormName").trigger("focus");
+  }
+
+  function closeTeamModal() {
+    $("#teamModal").attr("aria-hidden", "true").removeClass("is-open");
+    $("body").removeClass("modal-open");
+  }
+
+  async function openTeamMembersModal(idTeam, teamName) {
+    currentTeamForMembers = idTeam;
+    $("#teamMembersFormError").text("");
+    $("#teamMembersModalSubtitle").text(`Select the users who belong to ${teamName}.`);
+    $("#teamMemberList").html('<p class="attach-preview-placeholder"><i class="fa-solid fa-spinner fa-spin"></i> Loading members...</p>');
+    $("#teamMembersModal").attr("aria-hidden", "false").addClass("is-open");
+    $("body").addClass("modal-open");
+
+    try {
+      const [users, members] = await Promise.all([
+        apiFetch("/api/user/list"),
+        apiFetch(`/api/team/${idTeam}/members`)
+      ]);
+      const memberIds = new Set(members.map(m => m.idUser));
+
+      if (!users.length) {
+        $("#teamMemberList").html('<p class="attach-preview-placeholder">No users are available in this organization.</p>');
+        return;
+      }
+
+      $("#teamMemberList").html(users.map(u => `
+        <label class="team-member-option">
+          <input type="checkbox" class="team-member-checkbox" value="${u.idUser}" ${memberIds.has(u.idUser) ? "checked" : ""}>
+          <span class="mini-avatar">${escapeHtml(initials(u.fullName))}</span>
+          <span class="team-member-meta">
+            <strong>${escapeHtml(u.fullName)}</strong>
+            <span>${escapeHtml(u.username)}${u.isActive ? "" : " • Inactive"}</span>
+          </span>
+        </label>
+      `).join(""));
+    } catch (err) {
+      $("#teamMemberList").html(`<p class="attach-preview-placeholder">Couldn't load team members: ${escapeHtml(err.message)}</p>`);
+    }
+  }
+
+  function closeTeamMembersModal() {
+    $("#teamMembersModal").attr("aria-hidden", "true").removeClass("is-open");
+    $("body").removeClass("modal-open");
+    currentTeamForMembers = null;
+  }
+
+  $("#addDepartmentBtn").on("click", () => openDepartmentModal("add"));
+
+  $(document).on("click", ".department-list-item", async function () {
+    const idDept = Number($(this).data("id-dept"));
+    try {
+      const departments = await getDepartments();
+      const department = departments.find(d => d.idDept === idDept);
+      if (department) await openDepartmentModal("edit", department);
+    } catch (err) {
+      alert(`Couldn't load this department: ${err.message}`);
+    }
+  });
+
+  $("#departmentModalForm").on("submit", async function (e) {
+    e.preventDefault();
+    const idDept = Number($(this).attr("data-id-dept")) || 0;
+    const deptName = $("#departmentFormName").val().trim();
+    if (!deptName) {
+      $("#departmentFormError").text("Department name is required.");
+      return;
+    }
+
+    const $btn = $("#departmentFormSaveBtn");
+    $btn.prop("disabled", true).text("Saving...");
+    $("#departmentFormError").text("");
+
+    try {
+      await apiFetch("/api/department/addupd", {
+        method: "POST",
+        body: { idDept, deptName }
+      });
+      closeDepartmentModal();
+      await renderDepartments();
+      departmentsCache = null;
+      teamsCache = null;
+    } catch (err) {
+      $("#departmentFormError").text(err.message);
+    } finally {
+      $btn.prop("disabled", false).text("Save");
+    }
+  });
+
+  $("#addTeamBtn").on("click", () => openTeamModal("add"));
+
+  $(document).on("click", ".edit-team-btn", async function () {
+    const idTeam = Number($(this).data("id-team"));
+    try {
+      const teams = await getTeams();
+      const team = teams.find(t => t.idTeam === idTeam);
+      if (team) await openTeamModal("edit", team);
+    } catch (err) {
+      alert(`Couldn't load this team: ${err.message}`);
+    }
+  });
+
+  $(document).on("click", ".manage-team-members-btn", function () {
+    openTeamMembersModal(Number($(this).data("id-team")), $(this).data("team-name"));
+  });
+
+  $("#teamModalForm").on("submit", async function (e) {
+    e.preventDefault();
+    const idTeam = Number($(this).attr("data-id-team")) || 0;
+    const team = $("#teamFormName").val().trim();
+    const idDept = Number($("#teamFormDepartment").val());
+
+    if (!team) {
+      $("#teamFormError").text("Team name is required.");
+      return;
+    }
+    if (!idDept) {
+      $("#teamFormError").text("Department is required.");
+      return;
+    }
+
+    const $btn = $("#teamFormSaveBtn");
+    $btn.prop("disabled", true).text("Saving...");
+    $("#teamFormError").text("");
+
+    try {
+      await apiFetch("/api/team/addupd", {
+        method: "POST",
+        body: { idTeam, team, idDept }
+      });
+      closeTeamModal();
+      teamsCache = null;
+      await renderTeams();
+    } catch (err) {
+      $("#teamFormError").text(err.message);
+    } finally {
+      $btn.prop("disabled", false).text("Save");
+    }
+  });
+
+  $("#teamMembersSaveBtn").on("click", async function () {
+    if (!currentTeamForMembers) return;
+
+    const userIds = $(".team-member-checkbox:checked").map(function () {
+      return Number($(this).val());
+    }).get();
+
+    const $btn = $(this);
+    $btn.prop("disabled", true).text("Saving...");
+    $("#teamMembersFormError").text("");
+
+    try {
+      await apiFetch(`/api/team/${currentTeamForMembers}/members`, {
+        method: "POST",
+        body: { idTeam: currentTeamForMembers, userIds }
+      });
+      closeTeamMembersModal();
+      teamsCache = null;
+      await renderTeams();
+    } catch (err) {
+      $("#teamMembersFormError").text(err.message);
+    } finally {
+      $btn.prop("disabled", false).text("Save Members");
+    }
+  });
+
+  $(document).on("click", "[data-close-department-modal]", closeDepartmentModal);
+  $(document).on("click", "[data-close-team-modal]", closeTeamModal);
+  $(document).on("click", "[data-close-team-members-modal]", closeTeamMembersModal);
+
+  $(document).on("keydown", function (e) {
+    if (e.key !== "Escape") return;
+    if ($("#departmentModal").hasClass("is-open")) closeDepartmentModal();
+    else if ($("#teamModal").hasClass("is-open")) closeTeamModal();
+    else if ($("#teamMembersModal").hasClass("is-open")) closeTeamMembersModal();
   });
 
   /* ---------------- SETTINGS TABS ---------------- */
@@ -667,6 +1085,8 @@ $(function () {
     
     
     if (tab === "users") renderUsers();
+    if (tab === "dept") renderDepartments();
+    if (tab === "team") renderTeams();
   });
  
      /* ---------------- LOGOUT ---------------- */
@@ -712,7 +1132,7 @@ async function loadProfile() {
     $("#profileUsername").val(profile.username ?? "");
     $("#profileRole").val(profile.roleName ?? "");
     $("#profileOrganization").val(profile.orgName ?? "");
-
+    $("#profileDepartment").val(profile.deptName ?? "");
     updateLoggedInUserUI(profile);
 
   } catch (err) {

@@ -21,6 +21,38 @@
     document.documentElement.setAttribute("data-theme", theme);
   })();
 </script>
+
+<style>
+  .settings-helper { margin: 4px 0 0; font-size: 12px; color: var(--text-muted, #7a7f8c); }
+  .settings-list-row {
+    display:flex; align-items:center; gap:12px; width:100%;
+    padding:12px 14px; border:0; border-bottom:1px solid var(--border, #ececf2);
+    background:transparent; text-align:left; color:inherit;
+  }
+  .settings-list-row:last-child { border-bottom:0; }
+  .settings-list-row:hover { background:rgba(91,79,233,.045); }
+  .settings-list-main { flex:1; min-width:0; }
+  .settings-list-title { display:block; font-weight:600; }
+  .settings-list-sub { display:block; margin-top:3px; font-size:12px; color:var(--text-muted, #7a7f8c); }
+  .settings-list-action { flex:0 0 auto; }
+  .icon-btn.small-action {
+    width:34px; height:34px; border:1px solid var(--border, #e5e7eb);
+    border-radius:8px; background:transparent; cursor:pointer;
+  }
+  .icon-btn.small-action:hover { background:rgba(91,79,233,.08); }
+  .team-member-list { max-height:420px; overflow:auto; border:1px solid var(--border, #e5e7eb); border-radius:10px; }
+  .team-member-option {
+    display:flex; align-items:center; gap:12px; padding:11px 13px;
+    border-bottom:1px solid var(--border, #ececf2);
+  }
+  .team-member-option:last-child { border-bottom:0; }
+  .team-member-option input { width:17px; height:17px; accent-color:#5b4fe9; }
+  .team-member-meta { min-width:0; }
+  .team-member-meta strong, .team-member-meta span { display:block; }
+  .team-member-meta span { font-size:12px; color:var(--text-muted, #7a7f8c); margin-top:2px; }
+  .settings-modal-dialog { max-width:560px; }
+</style>
+
 </head>
 <body>
 
@@ -340,14 +372,46 @@
           <div><h1>Organization</h1><p>Manage departments, teams and roles.</p></div>
           <button class="btn btn-primary"><i class="fa-solid fa-user-plus"></i> Invite Member</button>
         </div>
-        <div class="org-grid" id="orgGrid"></div>
-        <div class="card table-card">
-          <div class="card-head"><h3>Members</h3></div>
-          <table class="data-table">
-            <thead><tr><th>Name</th><th>Department</th><th>Role</th><th>Status</th></tr></thead>
-            <tbody id="orgBody"></tbody>
-          </table>
+          <div class="org-stats-grid">
+
+              <div class="org-card">
+                  <i class="fa-solid fa-users"></i>
+                  <strong id="totalUsers">0</strong>
+                  <span>Total Users</span>
+              </div>
+
+              <div class="org-card">
+                  <i class="fa-solid fa-building"></i>
+                  <strong id="totalDepartments">0</strong>
+                  <span>Departments</span>
+              </div>
+
+              <div class="org-card">
+                  <i class="fa-solid fa-people-group"></i>
+                  <strong id="totalTeams">0</strong>
+                  <span>Total Teams</span>
+              </div>
+
+              <div class="org-card">
+                  <i class="fa-solid fa-user-shield"></i>
+                  <strong id="totalAdmins">0</strong>
+                  <span>Administrators</span>
+              </div>
+
+          </div>
+        <div class="card table-card"> 
+      <div class="card-head">
+        
+        <div>
+            <h3>Organization Members</h3>
+            <p class="card-subtitle">Users belonging to this organization</p>
         </div>
+        <span class="member-count" id="orgMemberCount">0 Members</span>
+          </div>
+
+          <div class="org-users-grid" id="orgUsersGrid"></div>
+           
+      </div>
       </section>
 
       <!-- ================= LICENSE ================= -->
@@ -384,8 +448,8 @@
           <div class="tab-group vertical" id="settingsTabs">
             <button class="tab active" data-tab="profile"><i class="fa-solid fa-user"></i> Profile</button>
             <button class="tab" data-tab="users"><i class="fa-solid fa-users"></i> Users</button>
-            <button class="tab" data-tab="dept"><i class="fa-solid fa-dept"></i> Departments</button>
-            <button class="tab" data-tab="team"><i class="fa-solid fa-team"></i> Teams</button>
+            <button class="tab" data-tab="dept"><i class="fa-solid fa-building"></i> Departments</button>
+            <button class="tab" data-tab="team"><i class="fa-solid fa-users-gear"></i> Teams</button>
             <button class="tab" data-tab="security"><i class="fa-solid fa-lock"></i> Security</button>
             <button class="tab" data-tab="integrations"><i class="fa-solid fa-plug"></i> Integrations</button>
             <button class="tab" data-tab="notifications"><i class="fa-solid fa-bell"></i> Notifications</button>
@@ -431,6 +495,13 @@
                       id="profileOrganization"
                       disabled>
                   </label>
+                  <label>
+                    Department
+                    <input
+                        type="text"
+                        id="profileDepartment"
+                        disabled>
+                  </label>
 
                 </div>
 
@@ -453,6 +524,40 @@
                 </div>
                 <div class="reply-inbox-list" id="userList">
                   <p class="attach-preview-placeholder"><i class="fa-solid fa-spinner fa-spin"></i> Loading users...</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="settings-tab" id="tab-dept">
+              <div class="card">
+                <div class="card-head">
+                  <div>
+                    <h3>Departments</h3>
+                    <p class="settings-helper">Departments available in your organization.</p>
+                  </div>
+                  <button class="btn btn-primary small" id="addDepartmentBtn">
+                    <i class="fa-solid fa-plus"></i> Add Department
+                  </button>
+                </div>
+                <div class="reply-inbox-list" id="departmentList">
+                  <p class="attach-preview-placeholder"><i class="fa-solid fa-spinner fa-spin"></i> Loading departments...</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="settings-tab" id="tab-team">
+              <div class="card">
+                <div class="card-head">
+                  <div>
+                    <h3>Teams</h3>
+                    <p class="settings-helper">Manage teams and their department assignments.</p>
+                  </div>
+                  <button class="btn btn-primary small" id="addTeamBtn">
+                    <i class="fa-solid fa-plus"></i> Add Team
+                  </button>
+                </div>
+                <div class="reply-inbox-list" id="teamList">
+                  <p class="attach-preview-placeholder"><i class="fa-solid fa-spinner fa-spin"></i> Loading teams...</p>
                 </div>
               </div>
             </div>
@@ -491,6 +596,66 @@
   </div>
 </div>
 
+
+<!-- Add/Edit Department -->
+<div class="attachment-modal" id="departmentModal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="departmentModalTitle">
+  <div class="attachment-modal__backdrop" data-close-department-modal></div>
+  <div class="attachment-modal__dialog user-modal-dialog settings-modal-dialog" role="document">
+    <button class="attachment-modal__close" type="button" aria-label="Close" data-close-department-modal><i class="fa-solid fa-xmark"></i></button>
+    <h2 id="departmentModalTitle">Add Department</h2>
+    <form id="departmentModalForm" data-id-dept="0">
+      <div class="form-grid">
+        <label>Department Name<input type="text" id="departmentFormName" maxlength="200" required></label>
+      </div>
+      <p class="field-error" id="departmentFormError"></p>
+      <div class="user-modal-actions">
+        <button type="button" class="btn btn-outline" data-close-department-modal>Cancel</button>
+        <button type="submit" class="btn btn-primary" id="departmentFormSaveBtn">Save</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Add/Edit Team -->
+<div class="attachment-modal" id="teamModal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="teamModalTitle">
+  <div class="attachment-modal__backdrop" data-close-team-modal></div>
+  <div class="attachment-modal__dialog user-modal-dialog settings-modal-dialog" role="document">
+    <button class="attachment-modal__close" type="button" aria-label="Close" data-close-team-modal><i class="fa-solid fa-xmark"></i></button>
+    <h2 id="teamModalTitle">Add Team</h2>
+    <form id="teamModalForm" data-id-team="0">
+      <div class="form-grid">
+        <label>Team Name<input type="text" id="teamFormName" maxlength="150" required></label>
+        <label>Department
+          <select id="teamFormDepartment" required></select>
+        </label>
+      </div>
+      <p class="field-error" id="teamFormError"></p>
+      <div class="user-modal-actions">
+        <button type="button" class="btn btn-outline" data-close-team-modal>Cancel</button>
+        <button type="submit" class="btn btn-primary" id="teamFormSaveBtn">Save</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Team member assignment -->
+<div class="attachment-modal" id="teamMembersModal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="teamMembersModalTitle">
+  <div class="attachment-modal__backdrop" data-close-team-members-modal></div>
+  <div class="attachment-modal__dialog user-modal-dialog settings-modal-dialog" role="document">
+    <button class="attachment-modal__close" type="button" aria-label="Close" data-close-team-members-modal><i class="fa-solid fa-xmark"></i></button>
+    <h2 id="teamMembersModalTitle">Team Members</h2>
+    <p class="settings-helper" id="teamMembersModalSubtitle"></p>
+    <div class="team-member-list" id="teamMemberList">
+      <p class="attach-preview-placeholder"><i class="fa-solid fa-spinner fa-spin"></i> Loading users...</p>
+    </div>
+    <p class="field-error" id="teamMembersFormError"></p>
+    <div class="user-modal-actions">
+      <button type="button" class="btn btn-outline" data-close-team-members-modal>Cancel</button>
+      <button type="button" class="btn btn-primary" id="teamMembersSaveBtn">Save Members</button>
+    </div>
+  </div>
+</div>
+
 <!-- Attachment details are populated by js/script.js. Files are not persisted by this UI. -->
 <div class="attachment-modal" id="attachmentModal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="attachmentModalTitle">
   <div class="attachment-modal__backdrop" data-close-attachment-modal></div>
@@ -518,6 +683,12 @@
         <label id="userFormPasswordLabel">Password<input type="password" id="userFormPassword" autocomplete="new-password"></label>
         <label>Role
           <select id="userFormRole" required></select>
+        </label>
+        <label>
+            Department
+          <select id="userFormDepartment">
+            <option value="">No Department</option>
+          </select>
         </label>
       </div>
       <p class="field-error" id="userFormError"></p>
