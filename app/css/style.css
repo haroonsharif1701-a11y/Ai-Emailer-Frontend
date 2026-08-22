@@ -379,6 +379,56 @@ body.modal-open{overflow:hidden;}
     margin-bottom: 20px;
 }
 
+.status-field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.status-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+}
+
+.status-options {
+    display: flex;
+    align-items: center;
+    gap: 22px;
+}
+
+.status-option {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    cursor: pointer;
+    font-size: 13px;
+    color: var(--text);
+    margin: 0;
+}
+
+.status-option input[type="radio"] {
+    width: 15px;
+    height: 15px;
+    margin: 0;
+    cursor: pointer;
+    accent-color: var(--primary);
+}
+.profile-status-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.profile-status-field .status-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted, #7a7f8c);
+}
+
+.profile-status-field .badge {
+  width: fit-content;
+}
 /* ==========================================================================
    License
    ========================================================================== */
@@ -593,3 +643,7 @@ span#user-status {
 
 .user-list-item{width:100%;}
 
+/*Added this for user list inactive badge*/
+span#inactiveBadge {
+    background-color: aliceblue;
+}

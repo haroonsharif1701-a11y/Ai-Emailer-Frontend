@@ -659,7 +659,7 @@ $(function () {
         <button class="reply-inbox-item user-list-item" type="button" data-user-id="${u.idUser}">
           <div class="mini-avatar">${escapeHtml(initials(u.fullName))}</div>
           <div class="reply-inbox-item-body">
-            <div class="reply-inbox-item-top"><strong>${escapeHtml(u.fullName)}</strong>${u.isActive ? "" : '<span class="badge badge-amber">Inactive</span>'}</div>
+            <div class="reply-inbox-item-top"><strong>${escapeHtml(u.fullName)}</strong>${u.isActive ? "" : '<span class="badge badge-amber" id="inactiveBadge">Inactive</span>'}</div>
             <span class="reply-inbox-item-preview">${escapeHtml(u.username)}</span>
           </div>
         </button>`).join(""));
@@ -669,10 +669,18 @@ $(function () {
   }
 
   async function populateRoleDropdown(selectedId) {
-    const roles = await getRoles();
-    $("#userFormRole").html(roles.map(r =>
-      `<option value="${r.idRole}" ${r.idRole === selectedId ? "selected" : ""}>${escapeHtml(r.roleName)}</option>`
-    ).join(""));
+  const roles = await getRoles();
+
+  $("#userFormRole").html(
+    `<option value="" disabled ${selectedId == null ? "selected" : ""}>
+      Choose a role
+    </option>` +
+    roles.map(r =>
+      `<option value="${r.idRole}" ${r.idRole === selectedId ? "selected" : ""}>
+        ${escapeHtml(r.roleName)}
+      </option>`
+    ).join("")
+  );
   }
 
   async function openUserModal(mode, user) {
@@ -689,6 +697,8 @@ $(function () {
       $("#userModalTitle").text("Edit User");
       $("#userFormFullName").val(user.fullName);
       $("#userFormUsername").val(user.username);
+      $("#userFormIsActive").prop("checked", user.isActive);
+      $("#userFormIsInactive").prop("checked", !user.isActive);
       // Password left blank on edit — the backend keeps the existing hash
       // unless something is actually typed here.
       $("#userFormPasswordLabel").html('Password<input type="password" id="userFormPassword" autocomplete="new-password" placeholder="Leave blank to keep the current password">');
@@ -710,7 +720,7 @@ $(function () {
     const departments = await apiFetch("/api/department/list");
 
     $("#userFormDepartment").html(
-        `<option value="">No Department</option>` +
+        `<option value="">Choose Department</option>` +
         departments.map(d =>
             `<option value="${d.idDept}" ${
                 d.idDept === selectedId ? "selected" : ""
@@ -775,7 +785,8 @@ $(function () {
           fullName: $("#userFormFullName").val().trim(),
           password: password || null,
           idRole: parseInt($("#userFormRole").val(), 10),
-          idDept: $("#userFormDepartment").val() ? parseInt($("#userFormDepartment").val(), 10) : null
+          idDept: $("#userFormDepartment").val() ? parseInt($("#userFormDepartment").val(), 10) : null,
+          isActive: $("#userFormIsActive").is(":checked"),
         },
       });
       closeUserModal();
@@ -1094,7 +1105,16 @@ $(function () {
   //   clearToken();
   // });
   $(".logout").on("click", function () {
-    logout();
+    clearToken();
+    try{
+      const result = apiFetch("/api/auth/logout", { method: "POST" });
+      method: "POST";
+      body: { token: getToken() };
+      window.location.href = "login.html";
+      result.response.ok ? window.location.href = "login.html" : console.error("Logout failed:", result.statusText);
+    }
+    catch(err){console.error("Error clearing token:", err);}
+  
   });
   
   /* ---------------- MOBILE SIDEBAR TOGGLE (safety net if narrow) ---------------- */
@@ -1133,6 +1153,19 @@ async function loadProfile() {
     $("#profileRole").val(profile.roleName ?? "");
     $("#profileOrganization").val(profile.orgName ?? "");
     $("#profileDepartment").val(profile.deptName ?? "");
+    const $statusBadge = $("#profileStatusBadge");
+    if (profile.isActive) {
+        $statusBadge
+            .removeClass("badge-amber")
+            .addClass("badge-green")
+            .text("Active");
+    } else {
+        $statusBadge
+            .removeClass("badge-green")
+            .addClass("badge-amber")
+            .text("Inactive");
+    }
+           
     updateLoggedInUserUI(profile);
 
   } catch (err) {

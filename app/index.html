@@ -502,7 +502,10 @@
                         id="profileDepartment"
                         disabled>
                   </label>
-
+                  <div class="profile-status-field">
+                    <span class="status-label">Status: <span id="profileStatusBadge" class="badge badge-green">Active</span></span>
+                  </div>
+                      
                 </div>
 
                 <p class="field-error" id="profileError"></p>
@@ -679,17 +682,34 @@
     <form id="userModalForm" data-mode="add" data-id-user="0">
       <div class="form-grid">
         <label>Full Name<input type="text" id="userFormFullName" required></label>
-        <label>Username (email)<input type="email" id="userFormUsername" required></label>
+        <label>Username (email)<input type="email" id="userFormUsername" required placeholder="@blackcap.com"></label>
         <label id="userFormPasswordLabel">Password<input type="password" id="userFormPassword" autocomplete="new-password"></label>
         <label>Role
-          <select id="userFormRole" required></select>
+          <select id="userFormRole" required>
+            <option value="">Choose Role</option>
+          </select>
         </label>
         <label>
             Department
           <select id="userFormDepartment">
-            <option value="">No Department</option>
+            <option value="">Choose Department</option>
           </select>
         </label>
+        <div class="status-field">
+    <span class="status-label">Status</span>
+
+      <div class="status-options">
+          <label class="status-option">
+              <input type="radio" name="userStatus" id="userFormIsActive" value="true" checked>
+              <span>Active</span>
+          </label>
+
+              <label class="status-option">
+                  <input type="radio" name="userStatus" id="userFormIsInactive" value="false">
+                  <span>Inactive</span>
+              </label>
+          </div>
+      </div>
       </div>
       <p class="field-error" id="userFormError"></p>
       <div class="user-modal-actions">
