@@ -647,3 +647,47 @@ span#user-status {
 span#inactiveBadge {
     background-color: aliceblue;
 }
+
+/* Role Based Menu Permission tab */
+.rbmp-layout { display:grid; grid-template-columns: 300px 1fr; gap:16px; margin-top:14px; }
+@media (max-width: 860px) { .rbmp-layout { grid-template-columns: 1fr; } }
+.rbmp-panel { border:1px solid var(--border, #e5e7eb); border-radius:10px; overflow:hidden; }
+.rbmp-panel-head {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:10px 14px; font-size:12px; color:var(--text-muted, #7a7f8c);
+  border-bottom:1px solid var(--border, #ececf2); background:rgba(91,79,233,.04);
+}
+.rbmp-role-row {
+  display:flex; align-items:center; justify-content:space-between; gap:10px;
+  width:100%; padding:11px 14px; border:0; border-bottom:1px solid var(--border, #ececf2);
+  background:transparent; text-align:left; cursor:pointer; color:inherit;
+}
+.rbmp-role-row:last-child { border-bottom:0; }
+.rbmp-role-row:hover { background:rgba(91,79,233,.045); }
+.rbmp-role-row.active { background:rgba(91,79,233,.1); border-left:3px solid #5b4fe9; padding-left:11px; }
+.rbmp-role-row .rbmp-role-name { font-weight:600; font-size:13px; }
+.rbmp-role-row .rbmp-role-count { font-size:11px; color:var(--text-muted, #7a7f8c); }
+.rbmp-role-actions { display:flex; gap:10px; flex:0 0 auto; }
+.rbmp-role-actions button { border:0; background:transparent; cursor:pointer; color:var(--text-muted, #7a7f8c); padding:2px; }
+.rbmp-role-actions button:hover { color:#5b4fe9; }
+.rbmp-add-role-row { padding:10px 14px; border-top:1px solid var(--border, #ececf2); }
+.rbmp-add-role-row button { border:0; background:transparent; color:#5b4fe9; font-weight:600; font-size:12px; cursor:pointer; padding:0; }
+
+.permission-row {
+  display:flex; align-items:center; justify-content:space-between; gap:10px;
+  padding:10px 14px; border-bottom:1px solid var(--border, #ececf2);
+}
+.permission-row:last-child { border-bottom:0; }
+.permission-row .permission-label { display:flex; align-items:center; gap:8px; font-size:13px; min-width:0; }
+.permission-row .permission-label i { width:16px; color:var(--text-muted, #7a7f8c); }
+.permission-row.nested { padding-left:42px; }
+.permission-row.nested .permission-label { font-size:12px; color:var(--text-secondary, #4b4f5c); }
+.permission-toggle-chevron { background:transparent; border:0; cursor:pointer; color:var(--text-muted, #7a7f8c); padding:0 2px 0 0; font-size:12px; }
+.permission-pill {
+  border:0; cursor:pointer; font-size:11px; font-weight:600; border-radius:6px;
+  padding:5px 12px; min-width:56px; text-align:center;
+}
+.permission-pill.is-allow { background:#0f6e56; color:#9fe1cb; }
+.permission-pill.is-deny { background:rgba(122,127,140,.18); color:var(--text-muted, #7a7f8c); }
+.rbmp-save-bar { display:flex; align-items:center; justify-content:flex-end; gap:12px; padding:12px 14px; border-top:1px solid var(--border, #ececf2); }
+.rbmp-save-bar .field-error { margin:0; flex:1; }

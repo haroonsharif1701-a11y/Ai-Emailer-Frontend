@@ -641,11 +641,122 @@ $(function () {
   /* ---------------- USERS (Settings tab) ---------------- */
   let rolesCache = null; // fetched once, reused for both the list's role names and the form's dropdown
 
-  async function getRoles() {
-    if (rolesCache) return rolesCache;
+  async function getRoles(force = false) {
+    if (!force && rolesCache) return rolesCache;
     rolesCache = await apiFetch("/api/role/list");
     return rolesCache;
   }
+
+  async function renderRoles() {
+    $("#roleList").html('<p class="attach-preview-placeholder"><i class="fa-solid fa-spinner fa-spin"></i> Loading roles...</p>');
+    try {
+      const roles = await getRoles(true);
+      if (!roles.length) {
+        $("#roleList").html('<p class="attach-preview-placeholder">No roles yet — add one to get started.</p>');
+        return;
+      }
+      $("#roleList").html(roles.map(r => `
+        <div class="settings-list-row">
+          <span class="mini-avatar"><i class="fa-solid fa-user-shield"></i></span>
+          <span class="settings-list-main">
+            <span class="settings-list-title">${escapeHtml(r.roleName)}</span>
+            <span class="settings-list-sub">Role</span>
+          </span>
+          <span class="settings-list-action" style="display:flex;gap:6px">
+            <button type="button" class="icon-btn small-action edit-role-btn" title="Edit role"
+                    data-id-role="${r.idRole}">
+              <i class="fa-solid fa-pen"></i>
+            </button>
+            <button type="button" class="icon-btn small-action delete-role-btn" title="Delete role"
+                    data-id-role="${r.idRole}" data-role-name="${escapeHtml(r.roleName)}">
+              <i class="fa-solid fa-trash"></i>
+            </button>
+          </span>
+        </div>
+      `).join(""));
+    } catch (err) {
+      $("#roleList").html(`<p class="attach-preview-placeholder">Couldn't load roles: ${escapeHtml(err.message)}</p>`);
+    }
+  }
+
+  async function openRoleModal(mode, role = null) {
+    $("#roleFormError").text("");
+    $("#roleModalForm")[0].reset();
+    $("#roleModalForm").attr("data-id-role", role?.idRole || 0);
+    $("#roleModalTitle").text(mode === "edit" ? "Edit Role" : "Add Role");
+    $("#roleFormName").val(role?.roleName || "");
+    $("#roleModal").attr("aria-hidden", "false").addClass("is-open");
+    $("body").addClass("modal-open");
+    $("#roleFormName").trigger("focus");
+  }
+
+  function closeRoleModal() {
+    $("#roleModal").attr("aria-hidden", "true").removeClass("is-open");
+    $("body").removeClass("modal-open");
+  }
+
+  $("#addRoleBtn").on("click", () => openRoleModal("add"));
+
+  $(document).on("click", ".edit-role-btn", async function () {
+    const idRole = Number($(this).data("id-role"));
+    try {
+      const roles = await getRoles();
+      const role = roles.find(r => r.idRole === idRole);
+      if (role) await openRoleModal("edit", role);
+    } catch (err) {
+      alert(`Couldn't load this role: ${err.message}`);
+    }
+  });
+
+  $(document).on("click", ".delete-role-btn", async function () {
+    const idRole = Number($(this).data("id-role"));
+    const roleName = $(this).data("role-name");
+    if (!confirm(`Delete role "${roleName}"? This cannot be undone.`)) return;
+
+    const $btn = $(this);
+    $btn.prop("disabled", true);
+    try {
+      await apiFetch("/api/role/delete", { method: "POST", body: { idRole } });
+      rolesCache = null;
+      await renderRoles();
+    } catch (err) {
+      alert(`Couldn't delete this role: ${err.message}`);
+    } finally {
+      $btn.prop("disabled", false);
+    }
+  });
+
+  $("#roleModalForm").on("submit", async function (e) {
+    e.preventDefault();
+    const idRole = Number($(this).attr("data-id-role")) || 0;
+    const roleName = $("#roleFormName").val().trim();
+    console.log(roleName);
+    
+    if (!roleName) {
+      $("#roleFormError").text("Role name not reaching backend.");
+      return;
+    }
+
+    const $btn = $("#roleFormSaveBtn");
+    $btn.prop("disabled", true).text("Saving...");
+    $("#roleFormError").text("");
+
+    try {
+      await apiFetch("/api/role/addupd", {
+        method: "POST",
+        body: { idRole, roleName }
+      });
+      closeRoleModal();
+      rolesCache = null;
+      await renderRoles();
+    } catch (err) {
+      $("#roleFormError").text(err.message);
+    } finally {
+      $btn.prop("disabled", false).text("Save");
+    }
+  });
+
+  $(document).on("click", "[data-close-role-modal]", closeRoleModal);
 
   async function renderUsers() {
     $("#userList").html('<p class="attach-preview-placeholder"><i class="fa-solid fa-spinner fa-spin"></i> Loading users...</p>');
@@ -798,7 +909,145 @@ $(function () {
     }
   });
 
+   /* ---------------- ROLE BASED MENU PERMISSIONS (Settings tab) ---------------- */
+  // Mirrors the app's actual navigation (sidebar + settings sub-tabs) so the
+ // permission tree always matches what a role could realistically see.
+    const MENU_PERMISSION_TREE = [
+      { key: "dashboard", label: "Dashboard", icon: "fa-chart-pie" },
+      { key: "inbox", label: "Inbox", icon: "fa-inbox" },
+      { key: "threat", label: "Threat Detection", icon: "fa-shield-halved" },
+      { key: "classification", label: "Classification", icon: "fa-tags" },
+      { key: "sentiment", label: "Sentiment Analysis", icon: "fa-face-smile" },
+      { key: "reply", label: "AI Reply Generator", icon: "fa-reply-all" },
+      { key: "attachments", label: "Attachment Analyzer", icon: "fa-paperclip" },
+      { key: "search", label: "Smart Search", icon: "fa-magnifying-glass" },
+      { key: "organization", label: "Organization", icon: "fa-building" },
+      { key: "license", label: "License", icon: "fa-key" },
+      {
+        key: "settings", label: "Settings", icon: "fa-gear", children: [
+          { key: "settings.profile", label: "Profile", icon: "fa-user" },
+          { key: "settings.users", label: "Users", icon: "fa-users" },
+          { key: "settings.dept", label: "Departments", icon: "fa-building" },
+          { key: "settings.roles", label: "Roles", icon: "fa-user-shield" },
+          { key: "settings.permissions", label: "Menu Permissions", icon: "fa-shield-halved" },
+          { key: "settings.team", label: "Teams", icon: "fa-users-gear" },
+          { key: "settings.security", label: "Security", icon: "fa-lock" },
+          { key: "settings.integrations", label: "Integrations", icon: "fa-plug" },
+          { key: "settings.notifications", label: "Notifications", icon: "fa-bell" },
+        ]
+      },
+    ];
 
+    let permissionSelectedRoleId = null;
+    let permissionState = new Map();               // menuKey -> boolean (allowed), for the selected role
+    let permissionExpanded = new Set(["settings"]); // which parent nodes show their children
+
+    async function renderPermissionRolesList() {
+      $("#rbmpRoleList").html('<p class="attach-preview-placeholder"><i class="fa-solid fa-spinner fa-spin"></i> Loading roles...</p>');
+      try {
+        const roles = await getRoles(true);
+        if (!roles.length) {
+          $("#rbmpRoleList").html('<p class="attach-preview-placeholder">No roles yet — add one in the Roles tab first.</p>');
+          return;
+        }
+        $("#rbmpRoleList").html(roles.map(r => `
+          <button type="button" class="rbmp-role-row ${r.idRole === permissionSelectedRoleId ? "active" : ""}"
+                  data-id-role="${r.idRole}" data-role-name="${escapeHtml(r.roleName)}">
+            <span class="rbmp-role-name">${escapeHtml(r.roleName)}</span>
+            <i class="fa-solid fa-chevron-right" style="font-size:11px;color:var(--text-muted,#7a7f8c)"></i>
+          </button>
+        `).join(""));
+      } catch (err) {
+        $("#rbmpRoleList").html(`<p class="attach-preview-placeholder">Couldn't load roles: ${escapeHtml(err.message)}</p>`);
+      }
+    }
+
+    function permissionRowsHtml(nodes, depth) {
+      return nodes.map(n => {
+        const isAllow = permissionState.get(n.key) === true;
+        const hasChildren = n.children && n.children.length;
+        const row = `
+          <div class="permission-row ${depth > 0 ? "nested" : ""}" data-menu-key="${n.key}">
+            <span class="permission-label">
+              ${hasChildren ? `<button type="button" class="permission-toggle-chevron" data-toggle-children="${n.key}">
+                  <i class="fa-solid fa-chevron-${permissionExpanded.has(n.key) ? "down" : "right"}"></i>
+                </button>` : ""}
+              <i class="fa-solid ${n.icon}"></i>
+              <span>${escapeHtml(n.label)}</span>
+            </span>
+            <button type="button" class="permission-pill ${isAllow ? "is-allow" : "is-deny"}" data-menu-key="${n.key}">
+              ${isAllow ? "Allow" : "Deny"}
+            </button>
+          </div>`;
+        const children = hasChildren && permissionExpanded.has(n.key)
+          ? permissionRowsHtml(n.children, depth + 1)
+          : "";
+        return row + children;
+      }).join("");
+    }
+
+    function renderPermissionTree() {
+      $("#rbmpPermissionTree").html(permissionRowsHtml(MENU_PERMISSION_TREE, 0));
+    }
+
+    async function selectPermissionRole(idRole, roleName) {
+      permissionSelectedRoleId = idRole;
+      $("#rbmpPermissionError").text("");
+      $(".rbmp-role-row").removeClass("active");
+      $(`.rbmp-role-row[data-id-role="${idRole}"]`).addClass("active");
+      $("#rbmpPermissionHead").html(`<span>Permission of <strong>${escapeHtml(roleName)}</strong></span><span></span>`);
+      $("#rbmpPermissionTree").html('<p class="attach-preview-placeholder"><i class="fa-solid fa-spinner fa-spin"></i> Loading permissions...</p>');
+      $("#rbmpSaveBar").hide();
+
+      try {
+        // Expects GET /api/permission/list?idRole={id} -> [{ menuKey, allowed }]
+        const rows = await apiFetch(`/api/permission/list?idRole=${idRole}`);
+        permissionState = new Map(rows.map(p => [p.menuKey, !!p.allowed]));
+        renderPermissionTree();
+        $("#rbmpSaveBar").show();
+      } catch (err) {
+        $("#rbmpPermissionTree").html(`<p class="attach-preview-placeholder">Couldn't load permissions: ${escapeHtml(err.message)}</p>`);
+      }
+    }
+
+    $(document).on("click", ".rbmp-role-row", function () {
+      selectPermissionRole(Number($(this).data("id-role")), $(this).data("role-name"));
+    });
+
+    $(document).on("click", "[data-toggle-children]", function (e) {
+      e.stopPropagation();
+      const key = $(this).data("toggle-children");
+      if (permissionExpanded.has(key)) permissionExpanded.delete(key);
+      else permissionExpanded.add(key);
+      renderPermissionTree();
+    });
+
+    $(document).on("click", ".permission-pill", function (e) {
+      e.stopPropagation();
+      const key = $(this).data("menu-key");
+      const nowAllow = permissionState.get(key) !== true;
+      permissionState.set(key, nowAllow);
+      $(this).toggleClass("is-allow", nowAllow).toggleClass("is-deny", !nowAllow).text(nowAllow ? "Allow" : "Deny");
+    });
+
+    $("#rbmpSaveBtn").on("click", async function () {
+      if (!permissionSelectedRoleId) return;
+      const $btn = $(this);
+      $btn.prop("disabled", true).text("Saving...");
+      $("#rbmpPermissionError").text("");
+      try {
+        const permissions = Array.from(permissionState.entries()).map(([menuKey, allowed]) => ({ menuKey, allowed }));
+        // Expects POST /api/permission/addupd { idRole, permissions: [{ menuKey, allowed }] }
+        await apiFetch("/api/permission/addupd", {
+          method: "POST",
+          body: { idRole: permissionSelectedRoleId, permissions }
+        });
+      } catch (err) {
+        $("#rbmpPermissionError").text(err.message);
+      } finally {
+        $btn.prop("disabled", false).text("Save Permissions");
+      }
+    });
   /* ---------------- DEPARTMENTS + TEAMS ---------------- */
   let departmentsCache = null;
   let teamsCache = null;
@@ -1082,6 +1331,7 @@ $(function () {
   $(document).on("keydown", function (e) {
     if (e.key !== "Escape") return;
     if ($("#departmentModal").hasClass("is-open")) closeDepartmentModal();
+    else if ($("#roleModal").hasClass("is-open")) closeRoleModal();
     else if ($("#teamModal").hasClass("is-open")) closeTeamModal();
     else if ($("#teamMembersModal").hasClass("is-open")) closeTeamMembersModal();
   });
@@ -1096,8 +1346,10 @@ $(function () {
     
     
     if (tab === "users") renderUsers();
+    if (tab === "roles") renderRoles();
     if (tab === "dept") renderDepartments();
     if (tab === "team") renderTeams();
+    if (tab === "permissions") renderPermissionRolesList();
   });
  
      /* ---------------- LOGOUT ---------------- */
