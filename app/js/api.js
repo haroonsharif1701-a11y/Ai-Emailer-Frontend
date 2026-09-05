@@ -8,7 +8,7 @@
 const API_BASE_URL = "https://localhost:5080"; // change when you deploy
 const TOKEN_KEY = "ai-emailer-token";
 const SYSTEM_KEY = "U2FsdGVkX19xLv4O2Qxnq7S68uAj9KhS4TJkyW241SI="; // System Key for AiEmailer API
-
+  
 function getToken() {
   return localStorage.getItem(TOKEN_KEY);
 }

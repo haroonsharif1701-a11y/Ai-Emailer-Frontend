@@ -912,35 +912,54 @@ $(function () {
    /* ---------------- ROLE BASED MENU PERMISSIONS (Settings tab) ---------------- */
   // Mirrors the app's actual navigation (sidebar + settings sub-tabs) so the
  // permission tree always matches what a role could realistically see.
-    const MENU_PERMISSION_TREE = [
-      { key: "dashboard", label: "Dashboard", icon: "fa-chart-pie" },
-      { key: "inbox", label: "Inbox", icon: "fa-inbox" },
-      { key: "threat", label: "Threat Detection", icon: "fa-shield-halved" },
-      { key: "classification", label: "Classification", icon: "fa-tags" },
-      { key: "sentiment", label: "Sentiment Analysis", icon: "fa-face-smile" },
-      { key: "reply", label: "AI Reply Generator", icon: "fa-reply-all" },
-      { key: "attachments", label: "Attachment Analyzer", icon: "fa-paperclip" },
-      { key: "search", label: "Smart Search", icon: "fa-magnifying-glass" },
-      { key: "organization", label: "Organization", icon: "fa-building" },
-      { key: "license", label: "License", icon: "fa-key" },
-      {
-        key: "settings", label: "Settings", icon: "fa-gear", children: [
-          { key: "settings.profile", label: "Profile", icon: "fa-user" },
-          { key: "settings.users", label: "Users", icon: "fa-users" },
-          { key: "settings.dept", label: "Departments", icon: "fa-building" },
-          { key: "settings.roles", label: "Roles", icon: "fa-user-shield" },
-          { key: "settings.permissions", label: "Menu Permissions", icon: "fa-shield-halved" },
-          { key: "settings.team", label: "Teams", icon: "fa-users-gear" },
-          { key: "settings.security", label: "Security", icon: "fa-lock" },
-          { key: "settings.integrations", label: "Integrations", icon: "fa-plug" },
-          { key: "settings.notifications", label: "Notifications", icon: "fa-bell" },
-        ]
-      },
-    ];
+       /* ---------------- ROLE BASED MENU PERMISSIONS (Settings tab) ---------------- */
+  // The menu tree used to be hardcoded here. It's now loaded from
+  // GET /api/menu/list (MenuController) and rebuilt into the parent/child
+  // shape the tree renderer expects, so adding/editing/disabling a menu in
+  // the database is reflected here without any front-end code changes.
+  let menuPermissionTreeCache = null;
+  let menuKeyToId = new Map(); // menuKey -> idMenu, needed because the permission API works in idMenu
+  let menuIdToKey = new Map(); // idMenu -> menuKey, needed to map API rows back onto the tree
 
-    let permissionSelectedRoleId = null;
-    let permissionState = new Map();               // menuKey -> boolean (allowed), for the selected role
-    let permissionExpanded = new Set(["settings"]); // which parent nodes show their children
+  async function getMenuPermissionTree(force = false) {
+    if (!force && menuPermissionTreeCache) return menuPermissionTreeCache;
+    const menus = await apiFetch("/api/menu/list");
+    menuKeyToId = new Map(menus.map(m => [m.menuKey, m.idMenu]));
+    menuIdToKey = new Map(menus.map(m => [m.idMenu, m.menuKey]));
+    menuPermissionTreeCache = buildMenuPermissionTree(menus);
+    return menuPermissionTreeCache;
+  }
+
+  // Converts the flat skey_menu rows (idMenu, idParentMenu, orderId, isEnable, ...)
+  // into a nested tree, dropping any menu with isEnable = false so a disabled
+  // menu stays hidden here too — not just from the sidebar.
+  function buildMenuPermissionTree(menus) {
+    const enabled = (menus || []).filter(m => m.isEnable);
+    const childrenByParent = new Map();
+    enabled.forEach(m => {
+      const parentId = m.idParentMenu ?? null;
+      if (!childrenByParent.has(parentId)) childrenByParent.set(parentId, []);
+      childrenByParent.get(parentId).push(m);
+    });
+    childrenByParent.forEach(list => list.sort((a, b) => a.orderId - b.orderId));
+
+    function toNode(m) {
+      const kids = (childrenByParent.get(m.idMenu) || []).map(toNode);
+      return {
+        key: m.menuKey,
+        label: m.menuName,
+        icon: m.iconClass || "fa-circle",
+        children: kids.length ? kids : undefined
+      };
+    }
+
+    return (childrenByParent.get(null) || []).map(toNode);
+  }
+
+  let permissionSelectedRoleId = null;
+  let permissionState = new Map();      // menuKey -> permission level (0 None, 1 View, 2 Add, 3 Update, 4 Delete) for the selected role
+  let permissionLastNonZero = new Map(); // menuKey -> last known non-zero level, so re-enabling doesn't lose a higher grant
+  let permissionExpanded = new Set(["settings"]); // which parent nodes show their children
 
     async function renderPermissionRolesList() {
       $("#rbmpRoleList").html('<p class="attach-preview-placeholder"><i class="fa-solid fa-spinner fa-spin"></i> Loading roles...</p>');
@@ -964,7 +983,7 @@ $(function () {
 
     function permissionRowsHtml(nodes, depth) {
       return nodes.map(n => {
-        const isAllow = permissionState.get(n.key) === true;
+        const isAllow = (permissionState.get(n.key) || 0) > 0;
         const hasChildren = n.children && n.children.length;
         const row = `
           <div class="permission-row ${depth > 0 ? "nested" : ""}" data-menu-key="${n.key}">
@@ -987,11 +1006,13 @@ $(function () {
     }
 
     function renderPermissionTree() {
-      $("#rbmpPermissionTree").html(permissionRowsHtml(MENU_PERMISSION_TREE, 0));
+      $("#rbmpPermissionTree").html(permissionRowsHtml(menuPermissionTreeCache || [], 0));
     }
 
     async function selectPermissionRole(idRole, roleName) {
       permissionSelectedRoleId = idRole;
+      permissionState = new Map();
+      permissionLastNonZero = new Map();
       $("#rbmpPermissionError").text("");
       $(".rbmp-role-row").removeClass("active");
       $(`.rbmp-role-row[data-id-role="${idRole}"]`).addClass("active");
@@ -1000,15 +1021,30 @@ $(function () {
       $("#rbmpSaveBar").hide();
 
       try {
-        // Expects GET /api/permission/list?idRole={id} -> [{ menuKey, allowed }]
+        await getMenuPermissionTree(); // uses the cache filled when the tab opened; refetches if missing
+      } catch (err) {
+        $("#rbmpPermissionTree").html(`<p class="attach-preview-placeholder">Couldn't load the menu list: ${escapeHtml(err.message)}</p>`);
+        return;
+      }
+
+      try {
+        // GET /api/permission/list?idRole={id} -> [{ idMenu, permission }]
         const rows = await apiFetch(`/api/permission/list?idRole=${idRole}`);
-        permissionState = new Map(rows.map(p => [p.menuKey, !!p.allowed]));
+        permissionState = new Map(
+          rows
+            .map(p => [menuIdToKey.get(p.idMenu), p.permission])
+            .filter(([key]) => key !== undefined) // drop rows for a menu no longer in the (enabled) tree
+        );
+        permissionLastNonZero = new Map(
+          Array.from(permissionState.entries()).filter(([, level]) => level > 0)
+        );
         renderPermissionTree();
         $("#rbmpSaveBar").show();
       } catch (err) {
         $("#rbmpPermissionTree").html(`<p class="attach-preview-placeholder">Couldn't load permissions: ${escapeHtml(err.message)}</p>`);
       }
     }
+    
 
     $(document).on("click", ".rbmp-role-row", function () {
       selectPermissionRole(Number($(this).data("id-role")), $(this).data("role-name"));
@@ -1025,9 +1061,16 @@ $(function () {
     $(document).on("click", ".permission-pill", function (e) {
       e.stopPropagation();
       const key = $(this).data("menu-key");
-      const nowAllow = permissionState.get(key) !== true;
-      permissionState.set(key, nowAllow);
-      $(this).toggleClass("is-allow", nowAllow).toggleClass("is-deny", !nowAllow).text(nowAllow ? "Allow" : "Deny");
+      const currentLevel = permissionState.get(key) || 0;
+      const turningOn = currentLevel === 0;
+
+      if (currentLevel > 0) permissionLastNonZero.set(key, currentLevel);
+      // Turning back on restores whatever level was last granted (e.g. Update),
+      // instead of always resetting to plain View — avoids silently downgrading access.
+      const newLevel = turningOn ? (permissionLastNonZero.get(key) || 1) : 0;
+      permissionState.set(key, newLevel);
+
+      $(this).toggleClass("is-allow", newLevel > 0).toggleClass("is-deny", newLevel === 0).text(newLevel > 0 ? "Allow" : "Deny");
     });
 
     $("#rbmpSaveBtn").on("click", async function () {
@@ -1036,13 +1079,20 @@ $(function () {
       $btn.prop("disabled", true).text("Saving...");
       $("#rbmpPermissionError").text("");
       try {
-        const permissions = Array.from(permissionState.entries()).map(([menuKey, allowed]) => ({ menuKey, allowed }));
-        // Expects POST /api/permission/addupd { idRole, permissions: [{ menuKey, allowed }] }
-        await apiFetch("/api/permission/addupd", {
+        // Only send items that are actually granted (level > 0). role_menu_permission_savebulk
+        // deletes any existing row for this role that isn't present in the payload, so an
+        // item left off here is correctly treated as revoked — no need to send explicit 0 rows.
+        const permissions = Array.from(permissionState.entries())
+          .filter(([, level]) => level > 0)
+          .map(([menuKey, permission]) => ({ idMenu: menuKeyToId.get(menuKey), permission }))
+          .filter(p => p.idMenu !== undefined);
+
+        // POST /api/permission/save { idRole, permissions: [{ idMenu, permission }] }
+        await apiFetch("/api/permission/save", {
           method: "POST",
           body: { idRole: permissionSelectedRoleId, permissions }
         });
-      } catch (err) {
+        } catch (err) {
         $("#rbmpPermissionError").text(err.message);
       } finally {
         $btn.prop("disabled", false).text("Save Permissions");
@@ -1349,7 +1399,12 @@ $(function () {
     if (tab === "roles") renderRoles();
     if (tab === "dept") renderDepartments();
     if (tab === "team") renderTeams();
-    if (tab === "permissions") renderPermissionRolesList();
+    if (tab === "permissions") {
+      renderPermissionRolesList();
+      getMenuPermissionTree(true).catch(() => {
+        // Silently ignore here — the error surfaces in the tree panel once a role is selected.
+      });
+    }
   });
  
      /* ---------------- LOGOUT ---------------- */
