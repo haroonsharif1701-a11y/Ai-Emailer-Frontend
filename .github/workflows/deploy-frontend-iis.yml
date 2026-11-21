@@ -1,0 +1,183 @@
+
+name: Deploy AiEmailer Frontend to IIS
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: aiemailer-frontend-iis
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy AiEmailer Frontend
+    runs-on: [self-hosted, Windows]
+    timeout-minutes: 20
+
+    defaults:
+      run:
+        shell: powershell -NoProfile -NonInteractive -ExecutionPolicy Bypass -File {0}
+
+    env:
+      SOURCE_DIR: 'app'
+      ENTRY_FILE: 'login.html'
+      IIS_PATH: 'E:\AIEmailer\Frontend'
+      BACKUP_ROOT: 'E:\AIEmailer\FrontendDeployBackups'
+
+    steps:
+      - name: Checkout frontend repository
+        uses: actions/checkout@v4
+
+      - name: Validate source and destination
+        run: |
+          $ErrorActionPreference = "Stop"
+
+          $source = Join-Path $env:GITHUB_WORKSPACE $env:SOURCE_DIR
+          $target = $env:IIS_PATH
+
+          if (!(Test-Path $source -PathType Container)) {
+            throw "Frontend source directory not found: $source"
+          }
+
+          if (!(Test-Path (Join-Path $source $env:ENTRY_FILE) -PathType Leaf)) {
+            throw "Frontend login.html not found: $source"
+          }
+
+          if (!(Test-Path $target -PathType Container)) {
+            throw "Destination does not exist: $target"
+          }
+
+          $targetFull = [IO.Path]::GetFullPath($target).TrimEnd('\')
+
+          if ($targetFull -ine 'E:\AIEmailer\Frontend') {
+            throw "Unexpected deployment target: $targetFull"
+          }
+
+          Write-Host "Source: $source"
+          Write-Host "Target: $target"
+          Write-Host "Validation passed."
+
+      - name: Prepare frontend staging
+        run: |
+          $ErrorActionPreference = "Stop"
+
+          $source = Join-Path $env:GITHUB_WORKSPACE $env:SOURCE_DIR
+          $stage = Join-Path $env:RUNNER_TEMP "AiEmailerFrontendStage"
+
+          if (Test-Path $stage) {
+            Remove-Item $stage -Recurse -Force
+          }
+
+          New-Item -ItemType Directory -Path $stage -Force | Out-Null
+
+          & robocopy $source $stage /E /XJ /R:3 /W:2 `
+            /XD .git .github node_modules .vs bin obj `
+            /XF .env .env.* web.config appsettings.json `
+                appsettings.*.json *.ps1 *.yml *.yaml
+
+          $copyCode = $LASTEXITCODE
+          $global:LASTEXITCODE = 0
+
+          if ($copyCode -ge 8) {
+            throw "Staging failed: Robocopy code $copyCode"
+          }
+
+          if (!(Test-Path (Join-Path $stage $env:ENTRY_FILE) -PathType Leaf)) {
+            throw "Staged login.html is missing."
+          }
+
+          Write-Host "Frontend staging completed."
+
+      - name: Backup existing deployment
+        run: |
+          $ErrorActionPreference = "Stop"
+
+          $backup = Join-Path $env:BACKUP_ROOT `
+            "$env:GITHUB_RUN_ID-$env:GITHUB_RUN_ATTEMPT"
+
+          if (Test-Path $backup) {
+            throw "Backup already exists: $backup"
+          }
+
+          New-Item -ItemType Directory -Path $backup -Force | Out-Null
+
+          & robocopy $env:IIS_PATH $backup /E /XJ /R:3 /W:2
+
+          $backupCode = $LASTEXITCODE
+          $global:LASTEXITCODE = 0
+
+          if ($backupCode -ge 8) {
+            throw "Backup failed: Robocopy code $backupCode"
+          }
+
+          Write-Host "Backup completed: $backup"
+
+      - name: Deploy frontend to IIS directory
+        run: |
+          $ErrorActionPreference = "Stop"
+
+          $source = Join-Path $env:RUNNER_TEMP "AiEmailerFrontendStage"
+          $target = $env:IIS_PATH
+          $backup = Join-Path $env:BACKUP_ROOT `
+            "$env:GITHUB_RUN_ID-$env:GITHUB_RUN_ATTEMPT"
+
+          try {
+            & robocopy $source $target /E /XJ /R:5 /W:3 `
+              /XF web.config .env .env.* `
+                  appsettings.json appsettings.*.json
+
+            $deployCode = $LASTEXITCODE
+            $global:LASTEXITCODE = 0
+
+            Write-Host "Robocopy exit code: $deployCode"
+
+            if ($deployCode -ge 8) {
+              throw "Deployment copy failed: $deployCode"
+            }
+
+            $sourceEntry = Join-Path $source $env:ENTRY_FILE
+            $targetEntry = Join-Path $target $env:ENTRY_FILE
+
+            if (!(Test-Path $targetEntry -PathType Leaf)) {
+              throw "Deployed login.html is missing."
+            }
+
+            $sourceHash = (Get-FileHash $sourceEntry -Algorithm SHA256).Hash
+            $targetHash = (Get-FileHash $targetEntry -Algorithm SHA256).Hash
+
+            if ($sourceHash -ne $targetHash) {
+              throw "Deployed login.html differs from staged source."
+            }
+
+            Write-Host "Frontend deployment verified."
+          }
+          catch {
+            Write-Warning "Deployment failed. Attempting restoration..."
+
+            & robocopy $backup $target /E /XJ /R:5 /W:3
+
+            $rollbackCode = $LASTEXITCODE
+            $global:LASTEXITCODE = 0
+
+            if ($rollbackCode -ge 8) {
+              Write-Warning "Restoration failed: $rollbackCode"
+            }
+            else {
+              Write-Host "Backup files restored."
+            }
+
+            throw
+          }
+          finally {
+            $global:LASTEXITCODE = 0
+          }
+
+      - name: Deployment summary
+        run: |
+          Write-Host "AiEmailer frontend files deployed."
+          Write-Host "Commit: $env:GITHUB_SHA"
+          Write-Host "Directory: $env:IIS_PATH"
+          Write-Host "Deployment job completed."

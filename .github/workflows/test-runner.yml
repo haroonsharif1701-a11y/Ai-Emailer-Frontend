@@ -1,0 +1,41 @@
+
+name: Test AiEmailer Frontend Runner
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Test Frontend Runner
+    runs-on: [self-hosted, Windows]
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Verify runner and frontend files
+        shell: powershell -NoProfile -NonInteractive -ExecutionPolicy Bypass -File {0}
+        run: |
+          $ErrorActionPreference = "Stop"
+
+          Write-Host "Runner: $env:RUNNER_NAME"
+          Write-Host "Computer: $env:COMPUTERNAME"
+          Write-Host "Workspace: $env:GITHUB_WORKSPACE"
+
+          $frontend = Join-Path $env:GITHUB_WORKSPACE "app"
+          $login = Join-Path $frontend "login.html"
+
+          if (!(Test-Path $login -PathType Leaf)) {
+            throw "Frontend login.html not found: $login"
+          }
+
+          Write-Host "Frontend directory found."
+
+          Get-ChildItem $frontend |
+            Select-Object Name
+
+          Write-Host "Frontend runner test passed."
