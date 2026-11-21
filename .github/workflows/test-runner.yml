@@ -1,21 +1,41 @@
 
-name: Test AiEmailer Runner
+name: Test AiEmailer Frontend Runner
 
 on:
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   test:
-    runs-on: [self-hosted, Windows]
+    name: Test Frontend Runner
+    runs-on: [self-hosted, Windows, aiemailer-frontend]
+    timeout-minutes: 5
 
     steps:
-      - name: Check runner connection
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Verify runner
         shell: powershell
         run: |
-          Write-Host "GitHub Actions connected!"
+          Write-Host "Frontend runner connected!"
           Write-Host "Computer: $env:COMPUTERNAME"
           Write-Host "Runner: $env:RUNNER_NAME"
+          Write-Host "Workspace: $env:GITHUB_WORKSPACE"
 
-      - name: Check .NET SDK
+      - name: Verify frontend source
         shell: powershell
-        run: dotnet --info
+        run: |
+          Write-Host "Repository files:"
+          Get-ChildItem $env:GITHUB_WORKSPACE |
+            Select-Object Name, Mode
+
+          Write-Host "HTML files:"
+          Get-ChildItem $env:GITHUB_WORKSPACE `
+            -Filter "*.html" -Recurse |
+            Where-Object { $_.FullName -notmatch '\\node_modules\\' } |
+            Select-Object FullName
+
+          Write-Host "Runner test completed."
