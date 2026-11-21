@@ -1,5 +1,5 @@
 
-name: Test AiEmailer Frontend Runner
+name: Test  AiEmailer Frontend Runner
 
 on:
   workflow_dispatch:
