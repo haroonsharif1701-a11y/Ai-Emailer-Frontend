@@ -10,32 +10,32 @@ permissions:
 jobs:
   test:
     name: Test Frontend Runner
-    runs-on: [self-hosted, Windows, aiemailer-frontend]
-    timeout-minutes: 5
+    runs-on: [self-hosted, Windows]
+    timeout-minutes: 10
 
     steps:
-      - name: Checkout repository
+      - name: Checkout frontend repository
         uses: actions/checkout@v4
 
-      - name: Verify runner
+      - name: Verify runner and frontend
         shell: powershell
         run: |
-          Write-Host "Frontend runner connected!"
-          Write-Host "Computer: $env:COMPUTERNAME"
+          $ErrorActionPreference = "Stop"
+
           Write-Host "Runner: $env:RUNNER_NAME"
+          Write-Host "Computer: $env:COMPUTERNAME"
           Write-Host "Workspace: $env:GITHUB_WORKSPACE"
 
-      - name: Verify frontend source
-        shell: powershell
-        run: |
-          Write-Host "Repository files:"
-          Get-ChildItem $env:GITHUB_WORKSPACE |
+          $frontend = Join-Path $env:GITHUB_WORKSPACE "app"
+          $login = Join-Path $frontend "login.html"
+
+          if (!(Test-Path $login -PathType Leaf)) {
+            throw "Frontend login.html not found: $login"
+          }
+
+          Write-Host "Frontend found: $frontend"
+
+          Get-ChildItem $frontend |
             Select-Object Name, Mode
 
-          Write-Host "HTML files:"
-          Get-ChildItem $env:GITHUB_WORKSPACE `
-            -Filter "*.html" -Recurse |
-            Where-Object { $_.FullName -notmatch '\\node_modules\\' } |
-            Select-Object FullName
-
-          Write-Host "Runner test completed."
+          Write-Host "Frontend runner test passed."
