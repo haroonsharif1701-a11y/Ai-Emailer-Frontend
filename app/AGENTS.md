@@ -2,7 +2,7 @@
 
 ## Project Structure & Module Organization
 
-This repository is a static front-end for the AI Emailer dashboard. `index.html` contains the authenticated dashboard and its page sections; `login.html` contains the sign-in screen. Keep page-specific markup in the relevant HTML file. Shared presentation lives in `css/`: use `style.css` for the dashboard and `auth.css` for login. Browser logic is organized in `js/`: `script.js` handles dashboard interactions, `auth.js` handles login validation, `theme.js` controls theme persistence, `data.js` supplies demo data, and `api.js` centralizes backend requests. Referenced icons belong under `icon/` when added.
+This repository is a static multi-page frontend. `index.html` is the dashboard. Each application screen has its own HTML file, `js/[page].js`, and `css/[page].css`; Threat Detection uses `threats.html` with `threat.js` and `threat.css`. Keep feature markup and logic in its page files. `js/shared.js` injects the sidebar/topbar and owns shared utilities, theme handling, navigation, and header profile display. `css/shared.css` owns shared components; `css/shared-overrides.css` preserves responsive and cross-page refinements. Load shared.css, the page stylesheet, then shared-overrides.css. Settings owns settings dialogs; Attachments owns its analysis dialog. `auth.js` and `auth.css` handle login. `api.js` centralizes backend requests, and `data.js` supplies demo data. Old script.js/theme.js are retired; style.css is a callback-page compatibility stylesheet.
 
 ## Development & Verification
 
@@ -20,7 +20,7 @@ Match the existing vanilla HTML/CSS and jQuery style. Use two-space indentation 
 
 ## Testing Guidelines
 
-No test framework or coverage threshold is configured. Manually test affected flows in current Chromium- and Firefox-based browsers, at desktop and narrow mobile widths. For API changes, test success, validation failure, network failure, and expired-token (`401`) behavior. If tests are introduced, place them in a top-level `tests/` directory and name them after the feature, e.g. `tests/auth.test.js`.
+The isolated Playwright checks in `tests/ui-smoke.cjs` exercise simulated API responses; see `tests/README.md`. No coverage threshold is configured. Manually test affected flows in current Chromium- and Firefox-based browsers, at desktop and narrow mobile widths. For API changes, test success, validation failure, network failure, and expired-token (`401`) behavior. If tests are introduced, place them in a top-level `tests/` directory and name them after the feature, e.g. `tests/auth.test.js`.
 
 
 ## Commit & Pull Request Guidelines

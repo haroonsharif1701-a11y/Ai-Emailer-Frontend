@@ -1,0 +1,11 @@
+/* ==========================================================================
+   Charts
+   ========================================================================== */
+.chart-grid{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr);gap:20px;margin-bottom:20px;}
+.chart-card canvas{max-height:260px;}
+.legend-list{margin-top:14px;display:flex;flex-direction:column;gap:9px;}
+.legend-list li{display:flex;align-items:center;justify-content:space-between;font-size:13px;color:var(--text-mid);}
+.legend-list .dot{width:9px;height:9px;border-radius:50%;display:inline-block;margin-right:8px;}
+.legend-list .lg-left{display:flex;align-items:center;}
+.legend-list strong{color:var(--text-dark);}
+

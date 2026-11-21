@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Success | AI Emailer</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/auth.css">
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="js/api.js"></script>
+<link rel="icon" type="image/svg+xml" href="icon/favicon.svg?v=2">
+<link rel="icon" type="image/png" sizes="32x32" href="icon/favicon-32.png?v=2">
+<link rel="icon" type="image/png" sizes="16x16" href="icon/favicon-16.png?v=2">
+<link rel="shortcut icon" href="icon/favicon.ico?v=2">
+<link rel="apple-touch-icon" sizes="180x180" href="icon/apple-touch-icon.png?v=2">
+</head>
+<body class="auth-body">
+    <div class="auth-wrap">
+        <div class="auth-side auth-side-form">
+            <div class="auth-card" style="text-align: center;">
+                <div class="brand-icon" style="margin: 0 auto 20px; font-size: 3rem; color: var(--primary);">
+                    <i class="fa-solid fa-circle-check"></i>
+                </div>
+                <h1>Authentication Successful!</h1>
+                <p class="auth-sub">You are being redirected to your dashboard...</p>
+                <div class="loader" style="margin: 20px auto; width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid var(--primary); border-radius: 50%; animation: spin 1s linear infinite;"></div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+
+    <script>
+        $(async function () {
+            const urlParams = new URLSearchParams(window.location.search);
+            const code = urlParams.get('code');
+            const verifier = sessionStorage.getItem('ai-emailer-oauth-verifier');
+            history.replaceState(null, '', location.pathname);
+            sessionStorage.removeItem('ai-emailer-oauth-verifier');
+            try {
+                if (!code || !verifier) throw new Error('Login request expired. Sign in again.');
+                clearToken();
+                const result = await apiFetch('/api/auth/exchange', { method: 'POST', body: { code, verifier } });
+                if (!result.token) throw new Error('Login was not accepted.');
+                setToken(result.token);
+                window.location.replace('index.html?landing=1');
+            } catch (error) {
+                $('h1').text('Sign-in could not be completed');
+                $('.auth-sub').text(error.message);
+                $('.loader').remove();
+                $('<a>', { href: 'login.html', text: 'Return to sign in' }).appendTo('.auth-card');
+            }
+        });
+    </script>
+</body>
+</html>

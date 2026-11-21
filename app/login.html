@@ -1,17 +1,11 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="access-loading">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Sign In | AI Emailer</title>
 
 <!-- Favicon -->
-<link rel="icon" type="image/svg+xml" href="icon/favicon.png">
-<link rel="icon" type="image/png" sizes="32x32" href="icon/favicon-32.png">
-<link rel="icon" type="image/png" sizes="16x16" href="icon/favicon-16.png">
-<link rel="shortcut icon" href="icon/favicon.ico">
-<link rel="apple-touch-icon" sizes="180x180" href="icon/apple-touch-icon.png">
-
 <script>
   (function () {
     var saved = localStorage.getItem("ai-emailer-theme");
@@ -23,46 +17,52 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/shared.css">
+<link rel="stylesheet" href="css/shared-overrides.css">
 <link rel="stylesheet" href="css/auth.css">
+<link rel="icon" type="image/svg+xml" href="icon/favicon.svg?v=2">
+<link rel="icon" type="image/png" sizes="32x32" href="icon/favicon-32.png?v=2">
+<link rel="icon" type="image/png" sizes="16x16" href="icon/favicon-16.png?v=2">
+<link rel="shortcut icon" href="icon/favicon.ico?v=2">
+<link rel="apple-touch-icon" sizes="180x180" href="icon/apple-touch-icon.png?v=2">
 </head>
 <body class="auth-body">
 
-<button class="icon-btn auth-theme-toggle" id="themeToggle" title="Toggle theme"><i class="fa-solid fa-moon"></i></button>
+<button class="icon-btn auth-theme-toggle" id="themeToggle" title="Toggle theme" aria-label="Toggle theme"><i class="fa-solid fa-moon"></i></button>
 
 <div class="auth-wrap">
 
   <!-- ===================== LEFT BRAND PANEL ===================== -->
   <div class="auth-side">
     <div class="brand">
-      <div class="brand-icon"><i class="fa-solid fa-envelope-open-text"></i></div>
+      <div class="brand-icon"><img src="icon/logo.svg" alt="" width="36" height="36"></div>
       <div class="brand-text">
         <span class="brand-name">AI Emailer</span>
-        <span class="brand-tag">Enterprise</span>
+        <span class="brand-tag">Email workspace</span>
       </div>
     </div>
 
-    <h2 class="auth-side-title">Your inbox, understood by AI.</h2>
-    <p class="auth-side-sub">Summaries, threat detection, and smart replies — all in one secure workspace.</p>
+    <h2 class="auth-side-title">Read clearly.<br>Reply thoughtfully.</h2>
+    <p class="auth-side-sub">Turn long messages into clear summaries and considered replies.</p>
 
     <ul class="auth-feature-list">
-      <li><i class="fa-solid fa-shield-halved"></i> Real-time phishing &amp; threat detection</li>
-      <li><i class="fa-solid fa-wand-magic-sparkles"></i> AI summaries &amp; one-click replies</li>
-      <li><i class="fa-solid fa-lock"></i> OAuth-only — we never store your password</li>
+      <li><i class="fa-solid fa-list-check"></i> Summaries and action items</li>
+      <li><i class="fa-solid fa-pen-to-square"></i> Reply drafts in the right tone</li>
+      <li><i class="fa-solid fa-file-lines"></i> Document summaries and file details</li>
     </ul>
 
-    <div class="auth-side-glow"></div>
+
   </div>
 
   <!-- ===================== RIGHT FORM PANEL ===================== -->
   <div class="auth-side auth-side-form">
     <div class="auth-card">
-      <h1>Welcome back 👋</h1>
+      <h1>Sign in to AI Emailer</h1>
       <p class="auth-sub">Sign in to continue to your dashboard.</p>
 
       <div class="oauth-row">
-        <button class="btn btn-outline oauth-btn" type="button"><i class="fa-brands fa-google" style="color:#EA4335"></i> Google</button>
-        <button class="btn btn-outline oauth-btn" type="button"><i class="fa-brands fa-microsoft" style="color:#00A4EF"></i> Microsoft</button>
+        <button class="btn btn-outline oauth-btn" type="button" id="loginGoogle"><i class="fa-brands fa-google" style="color:#EA4335"></i> Google</button>
+        <button class="btn btn-outline oauth-btn" type="button" id="loginMicrosoft"><i class="fa-brands fa-microsoft" style="color:#00A4EF"></i> Microsoft</button>
       </div>
 
       <div class="auth-divider"><span>or sign in with email</span></div>
@@ -70,17 +70,17 @@
       <form id="loginForm" novalidate>
         <label class="auth-label">
           Work Email
-          <input type="email" id="email" placeholder="you@company.com" autocomplete="email" required>
-          <span class="field-error" id="emailError"></span>
+          <input type="email" id="email" aria-describedby="emailError" placeholder="you@company.com" autocomplete="email" required>
+          <span class="field-error" id="emailError" role="alert"></span>
         </label>
 
         <label class="auth-label">
           Password
           <div class="password-field">
-            <input type="password" id="password" placeholder="Enter your password" autocomplete="current-password" required>
-            <button type="button" class="pw-toggle" id="pwToggle"><i class="fa-regular fa-eye"></i></button>
+            <input type="password" id="password" aria-describedby="passwordError" placeholder="Enter your password" autocomplete="current-password" required>
+            <button type="button" class="pw-toggle" id="pwToggle" aria-label="Show password" aria-pressed="false"><i class="fa-regular fa-eye"></i></button>
           </div>
-          <span class="field-error" id="passwordError"></span>
+          <span class="field-error" id="passwordError" role="alert"></span>
         </label>
 
         <div class="auth-row">
@@ -103,7 +103,8 @@
 </div>
 
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-<script src="js/theme.js"></script>
+<script src="js/shared.js"></script>
+<script src="js/permissions.js"></script>
 <script src="js/api.js"></script>
 <script src="js/auth.js"></script>
 </body>

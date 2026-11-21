@@ -1,0 +1,23 @@
+/* ==========================================================================
+   AI Reply Generator
+   ========================================================================== */
+.reply-layout{display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:flex-start;}
+.reply-card-hint{margin-top:3px;color:var(--text-muted);font-size:12px;}
+.reply-inbox-list{display:flex;flex-direction:column;max-height:520px;overflow-y:auto;padding-right:4px;}
+.reply-inbox-item{display:flex;gap:12px;width:100%;padding:16px 12px;border-bottom:1px solid var(--border);border-radius:10px;text-align:left;color:var(--text-dark);}
+.reply-inbox-item:hover{background:var(--bg);}.reply-inbox-item.selected{background:var(--primary-light);}.reply-inbox-item:last-child{border-bottom:none;}
+.reply-inbox-item .mini-avatar{width:36px;height:36px;border-radius:50%;background:var(--primary-light);color:var(--primary-dark);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;flex-shrink:0;}
+.reply-inbox-item-body{flex:1;min-width:0;}.reply-inbox-item-top{display:flex;justify-content:space-between;gap:8px;}.reply-inbox-item-top strong{font-size:13px;}.reply-inbox-item-top span{font-size:11px;color:var(--text-muted);flex-shrink:0;}
+.reply-inbox-item-subj{font-size:13px;font-weight:600;margin:2px 0;color:var(--text-dark);}.reply-inbox-item-preview{font-size:12px;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.reply-compose-card .card-head{align-items:center;}.reply-back-btn{padding:7px 10px;}
+.reply-original{background:var(--bg);border-radius:12px;padding:14px;margin-bottom:14px;}
+.ro-subject{font-weight:600;font-size:14px;margin-bottom:4px;}
+.ro-from{font-size:12px;color:var(--text-muted);margin-bottom:10px;}.ro-from span{padding:0 4px;}
+.ro-body{font-size:13px;color:var(--text-mid);line-height:1.6;white-space:pre-line;}
+.tone-group{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:6px;}
+.tone-group>span{font-size:13px;color:var(--text-muted);margin-right:2px;}
+.tone-chip{padding:6px 13px;border-radius:20px;font-size:12px;font-weight:600;background:var(--bg);color:var(--text-mid);border:1px solid transparent;}
+.tone-chip.active{background:var(--primary-light);color:var(--primary-dark);border-color:var(--primary);}
+.reply-textarea{width:100%;border:1px solid var(--border);border-radius:10px;padding:14px;font-size:13px;line-height:1.7;color:var(--text-dark);resize:vertical;background:var(--bg);}
+.reply-actions{display:flex;gap:10px;margin-top:14px;}
+

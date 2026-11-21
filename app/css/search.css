@@ -1,0 +1,10 @@
+/* ==========================================================================
+   Smart Search
+   ========================================================================== */
+.smart-search-box{display:flex;align-items:center;gap:12px;background:var(--card-bg);border:1px solid var(--border);box-shadow:var(--shadow);border-radius:14px;padding:8px 8px 8px 18px;margin-bottom:16px;}
+.smart-search-box i{color:var(--primary);font-size:16px;}
+.smart-search-box input{flex:1;border:none;outline:none;font-size:14px;padding:10px 0;}
+.chip-row{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:24px;}
+.query-chip{background:var(--card-bg);border:1px solid var(--border);padding:9px 15px;border-radius:20px;font-size:13px;color:var(--text-mid);}
+.query-chip:hover{border-color:var(--primary);color:var(--primary-dark);}
+

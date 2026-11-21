@@ -1,0 +1,11 @@
+/* ==========================================================================
+   License
+   ========================================================================== */
+.license-grid{display:grid;grid-template-columns:320px 1fr;gap:20px;align-items:flex-start;}
+.license-card{background:var(--card-bg);border:1px solid var(--border);color:var(--text-dark);border-radius:var(--radius);padding:22px;position:relative;box-shadow:var(--shadow-md);}
+.license-card h3{margin-top:10px;font-size:18px;}
+.license-key{font-family:monospace;font-size:13px;opacity:.8;margin:8px 0 16px;}
+.license-meta{display:flex;justify-content:space-between;font-size:13px;margin-bottom:8px;opacity:.9;}
+.progress-bar{height:6px;background:var(--raised);border-radius:6px;margin-top:10px;overflow:hidden;}
+.progress-fill{height:100%;background:var(--primary);border-radius:6px;}
+

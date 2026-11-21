@@ -35,6 +35,7 @@ async function apiFetch(path, { method = "GET", body } = {}) {
   try {
     response = await fetch(`${API_BASE_URL}${path}`, {
       method,
+      cache: "no-store",
       credentials: "include",
       headers,
       body: body ? JSON.stringify(body) : undefined,
@@ -50,6 +51,8 @@ async function apiFetch(path, { method = "GET", body } = {}) {
   }
 
   const data = await response.json().catch(() => null);
+
+  if (response.status === 403 && !path.startsWith("/api/permission/me")) window.dispatchEvent(new Event("aiemailer:forbidden"));
 
   if (!response.ok) {
     throw new Error(data?.message || `Request failed (${response.status}).`);
@@ -89,9 +92,48 @@ async function apiUpload(path, file) {
 
   const data = await response.json().catch(() => null);
 
+  if (response.status === 403 && !path.startsWith("/api/permission/me")) window.dispatchEvent(new Event("aiemailer:forbidden"));
+
   if (!response.ok) {
     throw new Error(data?.message || `Request failed (${response.status}).`);
   }
 
   return data;
+}
+
+// For binary responses (attachment preview/download) — same auth headers as
+// apiFetch/apiUpload, but returns a Blob instead of parsed JSON, since these
+// responses are files, not JSON.
+async function apiDownload(path) {
+  const headers = {};
+  const token = getToken();
+  if (token) headers["Authorization"] = `Bearer ${token}`;
+  headers["X-System-Key"] = SYSTEM_KEY;
+
+  let response;
+  try {
+    response = await fetch(`${API_BASE_URL}${path}`, {
+      method: "GET",
+      credentials: "include",
+      headers,
+    });
+  } catch (networkErr) {
+    throw new Error("Can't reach the server. Is the ASP.NET Core API running?");
+  }
+
+  if (response.status === 401) {
+    clearToken();
+    window.location.href = "login.html";
+    throw new Error("Session expired.");
+  }
+
+  if (response.status === 403 && !path.startsWith("/api/permission/me")) window.dispatchEvent(new Event("aiemailer:forbidden"));
+
+  if (!response.ok) {
+    const data = await response.json().catch(() => null);
+    throw new Error(data?.message || `Request failed (${response.status}).`);
+  }
+
+  const blob = await response.blob();
+  return { blob };
 }

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Error | AI Emailer</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/auth.css">
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<link rel="icon" type="image/svg+xml" href="icon/favicon.svg?v=2">
+<link rel="icon" type="image/png" sizes="32x32" href="icon/favicon-32.png?v=2">
+<link rel="icon" type="image/png" sizes="16x16" href="icon/favicon-16.png?v=2">
+<link rel="shortcut icon" href="icon/favicon.ico?v=2">
+<link rel="apple-touch-icon" sizes="180x180" href="icon/apple-touch-icon.png?v=2">
+</head>
+<body class="auth-body">
+    <div class="auth-wrap">
+        <div class="auth-side auth-side-form">
+            <div class="auth-card" style="text-align: center;">
+                <div class="brand-icon" style="margin: 0 auto 20px; font-size: 3rem; color: var(--danger);">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                </div>
+                <h1>Access Denied</h1>
+                <p id="errorMessage" class="auth-sub">An error occurred during authentication.</p>
+                <a href="login.html" class="btn btn-primary full" style="margin-top: 20px;">Back to Login</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        $(function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const error = urlParams.get('error');
+            if (error === 'unauthorized_organization') {
+                $("#errorMessage").text("Your account is not authorized for this organization.");
+            } else if (error) {
+                $("#errorMessage").text("Authentication error: " + error);
+            }
+        });
+    </script>
+</body>
+</html>

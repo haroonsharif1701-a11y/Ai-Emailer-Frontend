@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en" class="access-loading"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Threat | AI Emailer</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet"/>
+<link href="css/shared.css" rel="stylesheet"/>
+<script>
+  /* Apply saved theme before first paint to avoid a light/dark flash */
+  (function () {
+    var saved = localStorage.getItem("ai-emailer-theme");
+    var theme = saved || (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    document.documentElement.setAttribute("data-theme", theme);
+  })();
+</script>
+<link rel="stylesheet" href="css/threat.css">
+<link rel="stylesheet" href="css/shared-overrides.css">
+<link rel="icon" type="image/svg+xml" href="icon/favicon.svg?v=2">
+<link rel="icon" type="image/png" sizes="32x32" href="icon/favicon-32.png?v=2">
+<link rel="icon" type="image/png" sizes="16x16" href="icon/favicon-16.png?v=2">
+<link rel="shortcut icon" href="icon/favicon.ico?v=2">
+<link rel="apple-touch-icon" sizes="180x180" href="icon/apple-touch-icon.png?v=2">
+</head>
+<body data-page="threat">
+<script>if (!localStorage.getItem("ai-emailer-token")) window.location.replace("login.html");</script>
+<a class="skip-link" href="#content">Skip to content</a>
+<main class="content" id="content" tabindex="-1"><div class="demo-note" id="demoNotice" hidden><strong>Sample data</strong><span id="demoNoticeText"></span></div><section class="page active" id="page-threat">
+<div class="page-head">
+<div><h1>Threat Detection</h1><p>Phishing &amp; fake email analysis engine.</p></div>
+<button class="btn btn-outline"><i class="fa-solid fa-file-export"></i> Export Report</button>
+</div>
+<div class="stat-grid stat-grid-3">
+<div class="stat-card"><div class="stat-icon green"><i class="fa-solid fa-shield"></i></div>
+<div class="stat-info"><span class="stat-label">Safe</span><span class="stat-value">11,982</span></div></div>
+<div class="stat-card"><div class="stat-icon amber"><i class="fa-solid fa-shield-halved"></i></div>
+<div class="stat-info"><span class="stat-label">Medium Risk</span><span class="stat-value">631</span></div></div>
+<div class="stat-card"><div class="stat-icon red"><i class="fa-solid fa-skull-crossbones"></i></div>
+<div class="stat-info"><span class="stat-label">High Risk</span><span class="stat-value">234</span></div></div>
+</div>
+<div class="card table-card">
+<div class="card-head"><h3>Scanned Emails</h3></div>
+<table class="data-table">
+<thead><tr><th>Sender</th><th>SPF</th><th>DKIM</th><th>DMARC</th><th>Risk</th><th>Confidence</th></tr></thead>
+<tbody id="threatBody"></tbody>
+</table>
+</div>
+</section></main><script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="js/api.js"></script>
+<script src="js/data.js"></script>
+<script src="js/shared.js"></script>
+<script src="js/permissions.js"></script>
+<script src="js/threat.js"></script>
+</body></html>

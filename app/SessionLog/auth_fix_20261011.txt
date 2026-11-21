@@ -1,0 +1,43 @@
+================================================================================
+SESSION LOG: 2026-10-11
+TASK: Resolve External Authentication Loop
+STATUS: FIXED
+================================================================================
+
+[ISSUE]
+Users experienced an infinite loop during Google Login.
+Browser URL pattern: localhost:5080/login-error?error=remote_failure -> localhost:5080/signin-google -> (repeat)
+
+[ANALYSIS]
+The loop was caused by 'Authentication:ExternalRedirectUri' being set to the
+backend callback endpoint (https://localhost:5080/signin-google).
+When the backend attempted to redirect the user with a token, it sent them back
+to the Google OAuth handler. Since the request lacked OAuth 'state' and 'code',
+the handler threw an AuthenticationFailureException, which then redirected the
+user back to the same failing URI via the OnRemoteFailure event.
+
+[FIXES IMPLEMENTED]
+1. Configuration Update:
+   - Changed 'ExternalRedirectUri' in appsettings.json to
+     'http://localhost:5500/app/login-success.html'.
+
+2. Code Safeguard:
+   - Modified AuthController.ExternalCallback to detect if the successUri
+     contains 'signin-google' or 'signin-oidc'.
+   - If detected, the system now overrides the URI to the safe frontend
+     default: 'http://localhost:5500/app/login-success.html'.
+
+3. Frontend Alignment:
+   - Verified the existence of 'login-success.html' in the /app directory.
+   - Confirmed that the frontend server root must be the /app folder
+     for the redirect to resolve correctly.
+
+[VERIFICATION]
+- Google Login flow: SUCCESS
+- Token delivery to frontend: SUCCESS
+- Dashboard redirection: SUCCESS
+- Loop eliminated: SUCCESS
+
+================================================================================
+End of Session Log
+================================================================================

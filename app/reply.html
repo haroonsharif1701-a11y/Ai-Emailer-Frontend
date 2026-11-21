@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en" class="access-loading"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Reply | AI Emailer</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet"/>
+<link href="css/shared.css" rel="stylesheet"/>
+<script>
+  /* Apply saved theme before first paint to avoid a light/dark flash */
+  (function () {
+    var saved = localStorage.getItem("ai-emailer-theme");
+    var theme = saved || (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    document.documentElement.setAttribute("data-theme", theme);
+  })();
+</script>
+<link rel="stylesheet" href="css/reply.css">
+<link rel="stylesheet" href="css/shared-overrides.css">
+<link rel="icon" type="image/svg+xml" href="icon/favicon.svg?v=2">
+<link rel="icon" type="image/png" sizes="32x32" href="icon/favicon-32.png?v=2">
+<link rel="icon" type="image/png" sizes="16x16" href="icon/favicon-16.png?v=2">
+<link rel="shortcut icon" href="icon/favicon.ico?v=2">
+<link rel="apple-touch-icon" sizes="180x180" href="icon/apple-touch-icon.png?v=2">
+</head>
+<body data-page="reply">
+<script>if (!localStorage.getItem("ai-emailer-token")) window.location.replace("login.html");</script>
+<a class="skip-link" href="#content">Skip to content</a>
+<main class="content" id="content" tabindex="-1"><div class="demo-note" id="demoNotice" hidden><strong>Sample data</strong><span id="demoNoticeText"></span></div><section class="page active" id="page-reply">
+<div class="page-head">
+<div><h1>Reply generator</h1><p>Choose a message and tone, then review the draft.</p></div>
+</div>
+<div class="reply-layout">
+<div class="card reply-inbox-card" id="replyInboxCard">
+<div class="card-head">
+<div><h3>Select an Email</h3><p class="reply-card-hint">Choose a message to create a context-aware reply.</p></div>
+</div>
+<div class="reply-inbox-list" id="replyInboxItems"></div>
+</div>
+<div class="card reply-compose-card" hidden="" id="replyComposeCard">
+<div class="card-head">
+<button class="btn btn-outline small reply-back-btn" id="replyBackBtn" type="button"><i class="fa-solid fa-arrow-left"></i> Back to emails</button>
+<h3>Original Email</h3>
+</div>
+<div class="reply-original" id="replyOriginal">
+<p class="ro-subject">Re: Q3 Vendor Contract Renewal</p>
+<p class="ro-from">From: rahul.mehta@vendorcorp.com</p>
+<p class="ro-body">Hi team, following up on the contract renewal — could you confirm the updated pricing sheet and share the signed copy by Friday? Let me know if a call would help move things along.</p>
+</div>
+<div class="tone-group">
+<span>Choose tone:</span>
+<button class="tone-chip active" data-tone="Professional">Professional</button>
+<button class="tone-chip" data-tone="Friendly">Friendly</button>
+<button class="tone-chip" data-tone="Formal">Formal</button>
+<button class="tone-chip" data-tone="Custom">Custom</button>
+</div>
+<button class="btn btn-primary full" id="generateReplyBtn"><i class="fa-solid fa-pen-to-square"></i> Generate Reply</button>
+</div>
+<div class="card">
+<div class="card-head"><h3>Reply draft</h3><span class="reply-card-hint">Review before using</span></div>
+<textarea aria-label="Generated reply draft" class="reply-textarea" id="replyOutput" placeholder="Choose an email and generate a reply" readonly="" rows="12"></textarea>
+<p aria-live="polite" class="field-status" id="replyStatus" role="status"></p>
+<div class="reply-actions">
+<button class="btn btn-outline" disabled="" id="copyReplyBtn"><i class="fa-regular fa-copy"></i> Copy</button>
+<button class="btn btn-outline" disabled="" title="Sending is not connected. Copy the draft into your email client."><i class="fa-solid fa-paper-plane"></i> Insert &amp; Send</button>
+</div>
+</div>
+</div>
+</section></main><script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="js/api.js"></script>
+<script src="js/data.js"></script>
+<script src="js/shared.js"></script>
+<script src="js/permissions.js"></script>
+<script src="js/reply.js"></script>
+</body></html>

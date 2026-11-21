@@ -1,0 +1,26 @@
+/* ==========================================================================
+   Attachments
+   ========================================================================== */
+.dropzone{border:2px dashed var(--border);border-radius:var(--radius);padding:36px;text-align:center;color:var(--text-muted);margin-bottom:24px;background:var(--card-bg);cursor:pointer;transition:background-color .15s ease,color .15s ease,border-color .15s ease;}
+.dropzone.dz-active{border-color:var(--primary);background:var(--bg);}
+.dropzone i{font-size:26px;color:var(--primary);margin-bottom:10px;}
+.dropzone p{font-size:14px;color:var(--text-mid);}
+.dropzone p span{color:var(--primary);font-weight:600;text-decoration:underline;cursor:pointer;}
+.dz-sub{display:block;font-size:12px;margin-top:6px;color:var(--text-muted);}
+.attach-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;align-items:start;}
+.attach-card{position:relative;background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px;text-align:left;color:var(--text-dark);width:100%;}
+.attach-card:hover{border-color:var(--primary);background:var(--raised);}
+.attach-top{display:flex;align-items:center;gap:12px;margin-bottom:10px;}
+.attach-icon{width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;}
+.attach-top strong{font-size:13px;display:block;}
+.attach-top span{font-size:11px;color:var(--text-muted);}
+.attach-summary{position:relative;font-size:13px;color:var(--text-mid);line-height:1.6;background:var(--bg);padding:10px;border-radius:8px;}
+.attach-summary__text{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden;}
+.attach-summary::after{content:attr(data-tooltip);position:absolute;z-index:5;left:0;right:0;bottom:calc(100% + 8px);display:none;max-height:180px;overflow-y:auto;overscroll-behavior:contain;padding:10px;border:1px solid var(--border);border-radius:8px;background:var(--card-bg);box-shadow:var(--shadow-md);color:var(--text-dark);line-height:1.55;white-space:normal;overflow-wrap:anywhere;scrollbar-width:thin;scrollbar-color:var(--primary) var(--bg);}
+.attach-summary:hover::after,.attach-card:focus-visible .attach-summary::after{display:block;}
+.attach-threat{margin-top:10px;display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text-muted);}
+
+
+/* The short summary must not stretch to the file-information height. */
+#attachmentModal .attachment-modal__body{align-items:start;}
+#attachmentModal .attachment-modal__close{position:sticky;top:0;right:0;float:right;z-index:2;margin:-12px -12px 0 12px;background:var(--card-bg);border-radius:8px;}

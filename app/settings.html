@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en" class="access-loading"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Settings | AI Emailer</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet"/>
+<link href="css/shared.css" rel="stylesheet"/>
+<script>
+  /* Apply saved theme before first paint to avoid a light/dark flash */
+  (function () {
+    var saved = localStorage.getItem("ai-emailer-theme");
+    var theme = saved || (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    document.documentElement.setAttribute("data-theme", theme);
+  })();
+</script>
+<link rel="stylesheet" href="css/settings.css">
+<link rel="stylesheet" href="css/shared-overrides.css">
+<link rel="icon" type="image/svg+xml" href="icon/favicon.svg?v=2">
+<link rel="icon" type="image/png" sizes="32x32" href="icon/favicon-32.png?v=2">
+<link rel="icon" type="image/png" sizes="16x16" href="icon/favicon-16.png?v=2">
+<link rel="shortcut icon" href="icon/favicon.ico?v=2">
+<link rel="apple-touch-icon" sizes="180x180" href="icon/apple-touch-icon.png?v=2">
+</head>
+<body data-page="settings">
+<script>if (!localStorage.getItem("ai-emailer-token")) window.location.replace("login.html");</script>
+<a class="skip-link" href="#content">Skip to content</a>
+<main class="content" id="content" tabindex="-1"><div class="demo-note" id="demoNotice" hidden><strong>Sample data</strong><span id="demoNoticeText"></span></div><section class="page active" id="page-settings">
+<div class="page-head">
+<div><h1>Settings</h1><p>Manage your account, security and integrations.</p></div>
+</div>
+<div class="settings-layout">
+<div class="tab-group vertical" id="settingsTabs">
+<button class="tab active" data-tab="profile"><i class="fa-solid fa-user"></i> Profile</button>
+<button class="tab" data-tab="users"><i class="fa-solid fa-users"></i> Users</button>
+<button class="tab" data-tab="roles"><i class="fa-solid fa-user-shield"></i> Roles</button>
+<button class="tab" data-tab="dept"><i class="fa-solid fa-building"></i> Departments</button>
+<button class="tab" data-tab="permissions"><i class="fa-solid fa-shield-halved"></i> Menu Permissions</button>
+<button class="tab" data-tab="team"><i class="fa-solid fa-users-gear"></i> Teams</button>
+<button class="tab" data-tab="security"><i class="fa-solid fa-lock"></i> Security</button>
+<button class="tab" data-tab="integrations"><i class="fa-solid fa-plug"></i> Integrations</button>
+<button class="tab" data-tab="notifications"><i class="fa-solid fa-bell"></i> Notifications</button>
+</div>
+<div class="settings-panel">
+<div class="settings-tab active" id="tab-profile">
+<div class="card">
+<div class="card-head">
+<h3>Profile Information</h3>
+</div>
+<div class="form-grid">
+<label>
+                    Full Name
+                    <input autocomplete="name" id="profileFullName" type="text"/>
+</label>
+<label>
+                    Email
+                    <input autocomplete="email" id="profileUsername" type="email"/>
+</label>
+<label>
+                    Role
+                    <input disabled="" id="profileRole" type="text"/>
+</label>
+<label>
+                    Organization
+                    <input disabled="" id="profileOrganization" type="text"/>
+</label>
+<label>
+                    Department
+                    <input disabled="" id="profileDepartment" type="text"/>
+</label>
+<div class="profile-status-field">
+<span class="status-label">Status: <span class="badge badge-green" id="profileStatusBadge">Active</span></span>
+</div>
+</div>
+<p class="field-error" id="profileError"></p>
+<button class="btn btn-primary" id="saveProfileBtn" type="button">
+                  Save Changes
+                </button>
+</div>
+</div>
+<div class="settings-tab" id="tab-users">
+<div class="card">
+<div class="card-head">
+<h3>Users</h3>
+<button class="btn btn-primary small" id="addUserBtn"><i class="fa-solid fa-plus"></i> Add User</button>
+</div>
+<div class="reply-inbox-list" id="userList">
+<p class="attach-preview-placeholder"><i class="fa-solid fa-spinner fa-spin"></i> Loading users...</p>
+</div>
+</div>
+</div>
+<div class="settings-tab" id="tab-roles">
+<div class="card">
+<div class="card-head">
+<div>
+<h3>Roles</h3>
+<p class="settings-helper">Roles define what a user can access across the system.</p>
+</div>
+<button class="btn btn-primary small" id="addRoleBtn">
+<i class="fa-solid fa-plus"></i> Add Role
+                  </button>
+</div>
+<div class="reply-inbox-list" id="roleList">
+<p class="attach-preview-placeholder"><i class="fa-solid fa-spinner fa-spin"></i> Loading roles...</p>
+</div>
+</div>
+</div>
+<div class="settings-tab" id="tab-dept">
+<div class="card">
+<div class="card-head">
+<div>
+<h3>Departments</h3>
+<p class="settings-helper">Departments available in your organization.</p>
+</div>
+<button class="btn btn-primary small" id="addDepartmentBtn">
+<i class="fa-solid fa-plus"></i> Add Department
+                  </button>
+</div>
+<div class="reply-inbox-list" id="departmentList">
+<p class="attach-preview-placeholder"><i class="fa-solid fa-spinner fa-spin"></i> Loading departments...</p>
+</div>
+</div>
+</div>
+<div class="settings-tab" id="tab-permissions">
+<div class="card">
+<div class="card-head">
+<div>
+<h3>Menu Permissions</h3>
+<p class="settings-helper">Choose what each role can view, add, update, or delete.</p>
+</div>
+</div>
+<div class="rbmp-layout">
+<div class="rbmp-panel rbmp-roles-panel">
+<div class="rbmp-panel-head">
+<span>Title</span>
+<span>Action</span>
+</div>
+<div id="rbmpRoleList">
+<p class="attach-preview-placeholder"><i class="fa-solid fa-spinner fa-spin"></i> Loading roles...</p>
+</div>
+</div>
+<div class="rbmp-panel rbmp-permission-panel">
+<div class="rbmp-panel-head" id="rbmpPermissionHead">
+<span>Select a role to manage its permissions</span>
+<span></span>
+</div>
+<div id="rbmpPermissionTree">
+<p class="attach-preview-placeholder">Pick a role on the left to view and edit its menu access.</p>
+</div>
+<div class="rbmp-save-bar" id="rbmpSaveBar" style="display:none;">
+<p class="field-error" id="rbmpPermissionError"></p>
+<button class="btn btn-primary small" id="rbmpSaveBtn" type="button">Save Permissions</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="settings-tab" id="tab-team">
+<div class="card">
+<div class="card-head">
+<div>
+<h3>Teams</h3>
+<p class="settings-helper">Manage teams and their department assignments.</p>
+</div>
+<button class="btn btn-primary small" id="addTeamBtn">
+<i class="fa-solid fa-plus"></i> Add Team
+                  </button>
+</div>
+<div class="reply-inbox-list" id="teamList">
+<p class="attach-preview-placeholder"><i class="fa-solid fa-spinner fa-spin"></i> Loading teams...</p>
+</div>
+</div>
+</div>
+<div class="settings-tab" id="tab-security">
+<div class="card">
+<div class="card-head"><h3>Security</h3></div>
+<div class="switch-row"><div><strong>Multi-Factor Authentication</strong><p>Add an extra layer of security to your account.</p></div><label class="switch"><input checked="" type="checkbox"/><span></span></label></div>
+<div class="switch-row"><div><strong>Login Alerts</strong><p>Get notified of new device sign-ins.</p></div><label class="switch"><input checked="" type="checkbox"/><span></span></label></div>
+<button class="btn btn-outline">Change Password</button>
+</div>
+</div>
+<div class="settings-tab" id="tab-integrations">
+<div class="card">
+<div class="card-head"><h3>Connected Mailboxes</h3></div>
+<div class="integration-row"><i class="fa-brands fa-google" style="color:#EA4335"></i><div><strong>Gmail</strong><p>Connected — synced 2 min ago</p></div><span class="badge badge-green">Connected</span></div>
+<div class="integration-row"><i class="fa-brands fa-microsoft" style="color:#00A4EF"></i><div><strong>Outlook</strong><p>Not connected</p></div><button class="btn btn-outline small">Connect</button></div>
+<div class="integration-row"><i class="fa-solid fa-server" style="color:#6C5CE7"></i><div><strong>Exchange</strong><p>Not connected</p></div><button class="btn btn-outline small">Connect</button></div>
+</div>
+</div>
+<div class="settings-tab" id="tab-notifications">
+<div class="card">
+<div class="card-head"><h3>Notifications</h3></div>
+<div class="switch-row"><div><strong>High Risk Threat Alerts</strong><p>Immediate alert for high-risk emails.</p></div><label class="switch"><input checked="" type="checkbox"/><span></span></label></div>
+<div class="switch-row"><div><strong>Daily Summary Digest</strong><p>Receive a daily inbox summary at 9 AM.</p></div><label class="switch"><input checked="" type="checkbox"/><span></span></label></div>
+<div class="switch-row"><div><strong>Product Updates</strong><p>News about new AI Emailer features.</p></div><label class="switch"><input type="checkbox"/><span></span></label></div>
+</div>
+</div>
+</div>
+</div>
+</section></main><div aria-hidden="true" aria-labelledby="departmentModalTitle" aria-modal="true" class="attachment-modal" id="departmentModal" role="dialog">
+<div class="attachment-modal__backdrop" data-close-department-modal=""></div>
+<div class="attachment-modal__dialog user-modal-dialog settings-modal-dialog" role="document">
+<button aria-label="Close" class="attachment-modal__close" data-close-department-modal="" type="button"><i class="fa-solid fa-xmark"></i></button>
+<h2 id="departmentModalTitle">Add Department</h2>
+<form data-id-dept="0" id="departmentModalForm">
+<div class="form-grid">
+<label>Department Name<input id="departmentFormName" maxlength="200" required="" type="text"/></label>
+</div>
+<p class="field-error" id="departmentFormError"></p>
+<div class="user-modal-actions">
+<button class="btn btn-outline" data-close-department-modal="" type="button">Cancel</button>
+<button class="btn btn-primary" id="departmentFormSaveBtn" type="submit">Save</button>
+</div>
+</form>
+</div>
+</div><div aria-hidden="true" aria-labelledby="roleModalTitle" aria-modal="true" class="attachment-modal" id="roleModal" role="dialog">
+<div class="attachment-modal__backdrop" data-close-role-modal=""></div>
+<div class="attachment-modal__dialog user-modal-dialog settings-modal-dialog" role="document">
+<button aria-label="Close" class="attachment-modal__close" data-close-role-modal="" type="button"><i class="fa-solid fa-xmark"></i></button>
+<h2 id="roleModalTitle">Add Role</h2>
+<form data-id-role="0" id="roleModalForm">
+<div class="form-grid">
+<label>Role Name<input id="roleFormName" maxlength="200" required="" type="text"/></label>
+</div>
+<p class="field-error" id="roleFormError"></p>
+<div class="user-modal-actions">
+<button class="btn btn-outline" data-close-role-modal="" type="button">Cancel</button>
+<button class="btn btn-primary" id="roleFormSaveBtn" type="submit">Save</button>
+</div>
+</form>
+</div>
+</div><div aria-hidden="true" aria-labelledby="teamModalTitle" aria-modal="true" class="attachment-modal" id="teamModal" role="dialog">
+<div class="attachment-modal__backdrop" data-close-team-modal=""></div>
+<div class="attachment-modal__dialog user-modal-dialog settings-modal-dialog" role="document">
+<button aria-label="Close" class="attachment-modal__close" data-close-team-modal="" type="button"><i class="fa-solid fa-xmark"></i></button>
+<h2 id="teamModalTitle">Add Team</h2>
+<form data-id-team="0" id="teamModalForm">
+<div class="form-grid">
+<label>Team Name<input id="teamFormName" maxlength="150" required="" type="text"/></label>
+<label>Department
+          <select id="teamFormDepartment" required=""></select>
+</label>
+</div>
+<p class="field-error" id="teamFormError"></p>
+<div class="user-modal-actions">
+<button class="btn btn-outline" data-close-team-modal="" type="button">Cancel</button>
+<button class="btn btn-primary" id="teamFormSaveBtn" type="submit">Save</button>
+</div>
+</form>
+</div>
+</div><div aria-hidden="true" aria-labelledby="teamMembersModalTitle" aria-modal="true" class="attachment-modal" id="teamMembersModal" role="dialog">
+<div class="attachment-modal__backdrop" data-close-team-members-modal=""></div>
+<div class="attachment-modal__dialog user-modal-dialog settings-modal-dialog" role="document">
+<button aria-label="Close" class="attachment-modal__close" data-close-team-members-modal="" type="button"><i class="fa-solid fa-xmark"></i></button>
+<h2 id="teamMembersModalTitle">Team Members</h2>
+<p class="settings-helper" id="teamMembersModalSubtitle"></p>
+<div class="tab-group team-members-tabs" id="teamMembersTabs">
+<button class="tab active" data-member-tab="team" id="teamMembersTeamTabBtn" type="button">Team</button>
+<button class="tab" data-member-tab="add" type="button">Add Member</button>
+</div>
+<div class="team-member-list team-members-panel active" data-member-panel="team" id="teamMemberList">
+<p class="attach-preview-placeholder"><i class="fa-solid fa-spinner fa-spin"></i> Loading members...</p>
+</div>
+<div class="team-member-list team-members-panel" data-member-panel="add" id="addMemberList">
+<p class="attach-preview-placeholder"><i class="fa-solid fa-spinner fa-spin"></i> Loading users...</p>
+</div>
+<p class="field-error" id="teamMembersFormError"></p>
+<div class="user-modal-actions">
+<button class="btn btn-outline" data-close-team-members-modal="" type="button">Cancel</button>
+<button class="btn btn-primary" id="teamMembersSaveBtn" type="button">Save Members</button>
+</div>
+</div>
+</div><div aria-hidden="true" aria-labelledby="userModalTitle" aria-modal="true" class="attachment-modal" id="userModal" role="dialog">
+<div class="attachment-modal__backdrop" data-close-user-modal=""></div>
+<div class="attachment-modal__dialog user-modal-dialog" role="document">
+<button aria-label="Close" class="attachment-modal__close" data-close-user-modal="" type="button">
+<i class="fa-solid fa-xmark"></i>
+</button>
+<h2 id="userModalTitle">Add User</h2>
+<form data-id-user="0" data-mode="add" id="userModalForm">
+<div class="form-grid">
+<label>Full Name<input id="userFormFullName" required="" type="text"/></label>
+<label>Username (email)<input id="userFormUsername" placeholder="@blackcap.com" required="" type="email"/></label>
+<label id="userFormPasswordLabel">Password<input autocomplete="new-password" id="userFormPassword" type="password"/></label>
+<label>Role
+          <select id="userFormRole" required="">
+<option value="">Choose Role</option>
+</select>
+</label>
+<label>
+            Department
+          <select id="userFormDepartment">
+<option value="">Choose Department</option>
+</select>
+</label>
+<div class="status-field">
+<span class="status-label">Status</span>
+<div class="status-options">
+<label class="status-option">
+<input checked="" id="userFormIsActive" name="userStatus" type="radio" value="true"/>
+<span>Active</span>
+</label>
+<label class="status-option">
+<input id="userFormIsInactive" name="userStatus" type="radio" value="false"/>
+<span>Inactive</span>
+</label>
+</div>
+</div>
+</div>
+<p class="field-error" id="userFormError"></p>
+<div class="user-modal-actions">
+<button class="btn btn-outline" data-close-user-modal="" type="button">Cancel</button>
+<button class="btn btn-primary" id="userFormSaveBtn" type="submit">Save</button>
+</div>
+</form>
+</div>
+</div><script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="js/api.js"></script>
+<script src="js/data.js"></script>
+<script src="js/shared.js"></script>
+<script src="js/permissions.js"></script>
+<script src="js/settings.js"></script>
+</body></html>
