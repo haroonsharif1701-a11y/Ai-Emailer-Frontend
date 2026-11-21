@@ -1,0 +1,21 @@
+
+name: Test AiEmailer Runner
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: [self-hosted, Windows]
+
+    steps:
+      - name: Check runner connection
+        shell: powershell
+        run: |
+          Write-Host "GitHub Actions connected!"
+          Write-Host "Computer: $env:COMPUTERNAME"
+          Write-Host "Runner: $env:RUNNER_NAME"
+
+      - name: Check .NET SDK
+        shell: powershell
+        run: dotnet --info
