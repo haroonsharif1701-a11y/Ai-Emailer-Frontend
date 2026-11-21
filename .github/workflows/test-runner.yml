@@ -1,5 +1,5 @@
 
-name: Test  AiEmailer Frontend Runner
+name: Test AiEmailer Frontend Runner
 
 on:
   workflow_dispatch:
@@ -14,11 +14,11 @@ jobs:
     timeout-minutes: 10
 
     steps:
-      - name: Checkout frontend repository
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Verify runner and frontend
-        shell: powershell
+      - name: Verify runner and frontend files
+        shell: powershell -NoProfile -NonInteractive -ExecutionPolicy Bypass -File {0}
         run: |
           $ErrorActionPreference = "Stop"
 
@@ -33,9 +33,9 @@ jobs:
             throw "Frontend login.html not found: $login"
           }
 
-          Write-Host "Frontend found: $frontend"
+          Write-Host "Frontend directory found."
 
           Get-ChildItem $frontend |
-            Select-Object Name, Mode
+            Select-Object Name
 
           Write-Host "Frontend runner test passed."
