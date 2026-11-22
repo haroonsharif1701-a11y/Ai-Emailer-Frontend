@@ -55,8 +55,25 @@ $(function () {
         method: "POST",
         body: { email: $("#email").val().trim(), password: $("#password").val() },
       });
-      setToken(result.token);
-      window.location.href = "index.html?landing=1";
+      const messages = {
+          0: "Your account is inactive.",
+          2: "Invalid email or password.",
+          3: "Too many failed login attempts. Contact your administrator."
+        };
+
+        if (result?.status !== 1) {
+          clearToken();
+          throw new Error(messages[result?.status] || "Login failed.");
+        }
+
+        if (typeof result.token !== "string" ||
+            result.token.split(".").length !== 3) {
+          clearToken();
+          throw new Error("The server returned an invalid login token.");
+        }
+
+        setToken(result.token);
+        window.location.href = "index.html?landing=1";
     } catch (err) {
       $("#passwordError").text(err.message || "Sign in failed. Try again.");
       $(".auth-card").addClass("shake");

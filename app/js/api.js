@@ -1,11 +1,11 @@
 /* ==========================================================================
-   AI Emailer — API client
+   AI Emailer â€” API client
    One place that knows the backend's base URL and how to attach the JWT.
    Every real API call in the app should go through apiFetch(), not raw
    fetch(), so auth and error handling stay consistent.
    ========================================================================== */
 
-const API_BASE_URL = "https://localhost:5080"; // change when you deploy
+const API_BASE_URL = "https://aiemailerbackend.com";
 const TOKEN_KEY = "ai-emailer-token";
 const SYSTEM_KEY = "U2FsdGVkX19xLv4O2Qxnq7S68uAj9KhS4TJkyW241SI="; // System Key for AiEmailer API
   
@@ -62,7 +62,7 @@ async function apiFetch(path, { method = "GET", body } = {}) {
 }
 
 // Separate from apiFetch because file uploads use multipart/form-data, not
-// JSON — the browser needs to set its own Content-Type (with the multipart
+// JSON â€” the browser needs to set its own Content-Type (with the multipart
 // boundary), so we must NOT set Content-Type manually here.
 async function apiUpload(path, file) {
   const formData = new FormData();
@@ -101,7 +101,7 @@ async function apiUpload(path, file) {
   return data;
 }
 
-// For binary responses (attachment preview/download) — same auth headers as
+// For binary responses (attachment preview/download) â€” same auth headers as
 // apiFetch/apiUpload, but returns a Blob instead of parsed JSON, since these
 // responses are files, not JSON.
 async function apiDownload(path) {
